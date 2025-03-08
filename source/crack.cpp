@@ -1,25 +1,11 @@
 #include "crack.h"
+#include "common.h"
 
 crack_state_t handle_mouse_moved(crack_t *ctx, screen_t *screen, sf::Event &event);
 crack_state_t handle_mouse_pressed(crack_t *ctx, screen_t *screen);
 crack_state_t handle_text_entered(crack_t *ctx, screen_t *screen, sf::Event &event);
 
-crack_state_t create_object(crack_t *ctx, updater_t updater, constructor_t constructor, destructor_t destructor, object_type_t *obj_type) {
-    object_type_t type = (object_type_t)ctx->objects_number;
-    ctx->objects_number++;
-
-    if(ctx->constructor[type] != NULL || ctx->destructor[type] != NULL || ctx->updater[type] != NULL) {
-        return CRACK_TYPE_IN_USE;
-    }
-    ctx->constructor[type] = constructor;
-    ctx->updater[type] = updater;
-    ctx->destructor[type] = destructor;
-
-    *obj_type = type;
-    return CRACK_SUCCESS;
-}
-
-crack_state_t object_ctor(crack_t *ctx, object_t *obj, const object_info_t *obj_info, object_type_t type) {
+crack_state_t object_ctor(crack_t *ctx, object_t *obj, const object_info_t *obj_info, object_types_t type) {
     obj->type = type;
     obj->texture.loadFromFile(obj_info->texture);
 
@@ -28,7 +14,22 @@ crack_state_t object_ctor(crack_t *ctx, object_t *obj, const object_info_t *obj_
     obj->handle_buttons      = obj_info->handle_buttons;
     obj->on_text_entered     = obj_info->on_text_entered;
 
-    _RETURN_IF_ERROR(ctx->constructor[type](ctx, obj, obj_info));
+    _RETURN_IF_ERROR(ObjectTypesInfo[type].constructor(ctx, obj, obj_info));
+    return CRACK_SUCCESS;
+}
+
+crack_state_t screen_ctor(screen_t         *screen,
+                          const char       *music,
+                          const char       *background,
+                          crack_state_t   (*updater )(crack_t *, screen_t *),
+                          crack_state_t   (*unloader)(crack_t *, screen_t *)) {
+    screen->background.loadFromFile(background);
+    screen->box.setPosition(sf::Vector2f(0, 0));
+    screen->box.setSize(ScreenSize);
+    screen->box.setTexture(&screen->background);
+    screen->music.openFromFile(music);
+    screen->updater = updater;
+    screen->unloader = unloader;
     return CRACK_SUCCESS;
 }
 
@@ -75,8 +76,7 @@ crack_state_t run_screen(crack_t *ctx, screen_t *screen) {
         }
 
         for(size_t i = 0; i < screen->objects_num; i++) {
-            size_t updater = (size_t)screen->objects[i].type;
-            _END_SCREEN_IF_ERROR(ctx->updater[updater](ctx, screen->objects + i));
+            _END_SCREEN_IF_ERROR(ObjectTypesInfo[screen->objects[i].type].updater(ctx, screen->objects + i));
         }
 
         ctx->win.display();

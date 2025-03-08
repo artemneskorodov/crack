@@ -14,7 +14,7 @@ static const button_info_t DefeatButtonAgainPrivate = {
     .texture_size           = sf::Vector2i(690, 370),
     .texture_focused        = sf::Vector2i(0, 370),
     .texture_unfocused      = sf::Vector2i(0, 0),
-    .rel_pos                = sf::Vector2f(50 - 15, 75)
+    .rel_pos                = sf::Vector2f(50 + 15, 75)
 };
 
 static const object_info_t DefeatButtonAgainPublic = {
@@ -31,7 +31,7 @@ static const button_info_t DefeatButtonExitPrivate = {
     .texture_size           = sf::Vector2i(690, 370),
     .texture_focused        = sf::Vector2i(0, 370),
     .texture_unfocused      = sf::Vector2i(0, 0),
-    .rel_pos                = sf::Vector2f(50 + 15, 75)
+    .rel_pos                = sf::Vector2f(50 - 15, 75)
 };
 
 static const object_info_t DefeatButtonExitPublic = {
@@ -44,27 +44,21 @@ static const object_info_t DefeatButtonExitPublic = {
     .object_private_info    = (const void *)&DefeatButtonExitPrivate,
 };
 
-crack_state_t create_defeat_objects(crack_t *ctx, object_type_t *object_types) {
-    return CRACK_SUCCESS;
-}
-
-crack_state_t defeat_ctor(crack_t *ctx, object_type_t *objects_types, screen_t *screen) {
+crack_state_t defeat_ctor(crack_t *ctx, screen_t *screen) {
     screen->objects_num = 2;
-    screen->updater = defeat_updater;
-    screen->music.openFromFile(DefeatMusicFile);
-    screen->unloader = NULL;
-    screen->background.loadFromFile(DefeatBackground);
-    screen->box.setSize(ScreenSize);
-    screen->box.setPosition(sf::Vector2f(0, 0));
-    screen->box.setTexture(&screen->background);
+    _RETURN_IF_ERROR(screen_ctor   (screen,
+                                    DefeatMusicFile,
+                                    DefeatBackground,
+                                    defeat_updater,
+                                    NULL));
     _RETURN_IF_ERROR(object_ctor   (ctx,
                                     screen->objects + DEFEAT_OBJ_BUTTON_AGAIN,
                                     &DefeatButtonAgainPublic,
-                                    objects_types[OBJECT_BUTTON]));
+                                    OBJECT_BUTTON));
     _RETURN_IF_ERROR(object_ctor   (ctx,
                                     screen->objects + DEFEAT_OBJ_BUTTON_EXIT,
                                     &DefeatButtonExitPublic,
-                                    objects_types[OBJECT_BUTTON]));
+                                    OBJECT_BUTTON));
     return CRACK_SUCCESS;
 }
 

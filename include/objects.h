@@ -7,6 +7,7 @@ static const size_t EnemiesNum              = 20;
 static const size_t BulletsNum              = 15;
 static const size_t MaxDecorationFrames     = 10;
 static const size_t MaxPBarFrames           = 10;
+static const size_t MaxTextBufferSize       = 64;
 
 struct button_t {
     sf::RectangleShape  box;
@@ -15,7 +16,7 @@ struct button_t {
 };
 
 struct textbox_t {
-    char               *buffer;
+    char                buffer[MaxTextBufferSize];
     size_t              position;
     size_t              capacity;
     sf::Text            text;
@@ -83,5 +84,33 @@ struct bullets_t {
     int                 active_head;
     int                 inactive_head;
 };
+
+static const size_t PlayerObjectsNum        = 1;
+static const size_t EnemiesObjectsNum       = 1;
+static const size_t BulletsObjectsNum       = 1;
+static const size_t ButtonObjectNum         = 9;
+static const size_t TextboxObjectsNum       = 1;
+static const size_t DecorationObjectsNum    = 1;
+static const size_t PBarObjectsNum          = 1;
+
+struct objects_storage_t {
+    player_t            player_objs[PlayerObjectsNum];
+    size_t              used_players;
+    enemies_t           enemies_objs[EnemiesObjectsNum];
+    size_t              used_enemies;
+    bullets_t           bullets_objs[BulletsObjectsNum];
+    size_t              used_bullets;
+    button_t            button_objs[ButtonObjectNum];
+    size_t              used_buttons;
+    textbox_t           textbox_objs[TextboxObjectsNum];
+    size_t              used_textboxs;
+    decoration_t        decoration_objs[DecorationObjectsNum];
+    size_t              used_decorations;
+    pbar_t              pbar_objs[PBarObjectsNum];
+    size_t              used_pbars;
+};
+
+void           *get_free_object        (void               *storage,
+                                        object_types_t      object_type);
 
 #endif

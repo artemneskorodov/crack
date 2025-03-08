@@ -31,3 +31,11 @@ bool box_intersect(const sf::Vector2f &tl1, const sf::Vector2f &tr1, const sf::V
     }
     return false;
 }
+
+size_t file_size (FILE *file) {
+    size_t old_pos = ftell(file);
+    fseek(file, 0, SEEK_END);
+    size_t size = ftell(file);
+    fseek(file, old_pos, SEEK_SET);
+    return size;
+}

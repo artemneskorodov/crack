@@ -1,5 +1,7 @@
 #include "game.h"
 #include "utils.h"
+#include "objects.h"
+#include "common.h"
 
 enum game_objects_t {
     GAME_OBJ_PLAYER = 0,
@@ -44,15 +46,6 @@ static const sf::IntRect GameBackgroundRects[] = {
 
 static crack_state_t player_buttons_handler(crack_t *ctx, object_t *obj);
 static crack_state_t game_updater(crack_t *ctx, screen_t *screen);
-static crack_state_t player_constructor(crack_t *ctx, object_t *obj, const object_info_t *obj_info);
-static crack_state_t player_updater(crack_t *ctx, object_t *obj);
-static crack_state_t player_destructor(crack_t *ctx, object_t *obj);
-static crack_state_t enemies_constructor(crack_t *ctx, object_t *obj, const object_info_t *obj_info);
-static crack_state_t enemies_updater(crack_t *ctx, object_t *obj);
-static crack_state_t enemies_destructor(crack_t *ctx, object_t *obj);
-static crack_state_t bullets_constructor(crack_t *ctx, object_t *obj, const object_info_t *obj_info);
-static crack_state_t bullets_updater(crack_t *ctx, object_t *obj);
-static crack_state_t bullets_destructor(crack_t *ctx, object_t *obj);
 static crack_state_t check_bullets_enemies_collisions(crack_t *ctx, screen_t *screen, bullets_t *bullets, enemies_t *enemies, pbar_t *pbar);
 static crack_state_t check_player_enemies_collisions(crack_t *ctx, screen_t *screen, player_t *player, enemies_t *enemies);
 static crack_state_t check_bullets_timer(crack_t *ctx, screen_t *screen, bullets_t *bullets, player_t *player);
@@ -173,54 +166,34 @@ static const object_info_t GamePBarPublic = {
     .object_private_info
 */
 
-crack_state_t create_game_objects(crack_t *ctx, object_type_t *objects_types) {
-    _RETURN_IF_ERROR(create_object (ctx,
-                                    player_updater,
-                                    player_constructor,
-                                    player_destructor,
-                                    objects_types + OBJECT_PLAYER));
-    _RETURN_IF_ERROR(create_object (ctx,
-                                    enemies_updater,
-                                    enemies_constructor,
-                                    enemies_destructor,
-                                    objects_types + OBJECT_ENEMIES));
-    _RETURN_IF_ERROR(create_object (ctx,
-                                    bullets_updater,
-                                    bullets_constructor,
-                                    bullets_destructor,
-                                    objects_types + OBJECT_BULLETS));
-    return CRACK_SUCCESS;
-}
-
-crack_state_t game_ctor(crack_t *ctx, object_type_t *objects_types, screen_t *screen) {
+crack_state_t game_ctor(crack_t *ctx, screen_t *screen) {
     screen->objects_num = 5;
-    screen->updater = game_updater;
-    screen->music.openFromFile(GameMusicFile);
-    screen->unloader = unload_game;
-    screen->background.loadFromFile(GameBackground);
-    screen->box.setSize(ScreenSize);
-    screen->box.setPosition(sf::Vector2f(0, 0));
-    screen->box.setTexture(&screen->background);
+    _RETURN_IF_ERROR(screen_ctor   (screen,
+                                    GameMusicFile,
+                                    GameBackground,
+                                    game_updater,
+                                    unload_game));
+
     _RETURN_IF_ERROR(object_ctor   (ctx,
                                     screen->objects + GAME_OBJ_PLAYER,
                                     &GamePlayerPublic,
-                                    objects_types[OBJECT_PLAYER]));
+                                    OBJECT_PLAYER));
     _RETURN_IF_ERROR(object_ctor   (ctx,
                                     screen->objects + GAME_OBJ_ENEMIES,
                                     &GameEnemiesPublic,
-                                    objects_types[OBJECT_ENEMIES]));
+                                    OBJECT_ENEMIES));
     _RETURN_IF_ERROR(object_ctor   (ctx,
                                     screen->objects + GAME_OBJ_BULLETS,
                                     &GameBulletsPublic,
-                                    objects_types[OBJECT_BULLETS]));
+                                    OBJECT_BULLETS));
     _RETURN_IF_ERROR(object_ctor   (ctx,
                                     screen->objects + GAME_OBJ_COIN,
                                     &GameCoinPublic,
-                                    objects_types[OBJECT_DECORATION]));
+                                    OBJECT_DECORATION));
     _RETURN_IF_ERROR(object_ctor   (ctx,
                                     screen->objects + GAME_OBJ_PBAR,
                                     &GamePBarPublic,
-                                    objects_types[OBJECT_PBAR]));
+                                    OBJECT_PBAR));
     return CRACK_SUCCESS;
 }
 
@@ -338,7 +311,7 @@ crack_state_t check_player_enemies_collisions(crack_t */*ctx*/, screen_t */*scre
 }
 
 crack_state_t player_constructor(crack_t *ctx, object_t *obj, const object_info_t *obj_info) {
-    obj->object_private = ctx->get_free_obj(ctx->objects_storage, (int)OBJECT_PLAYER);
+    obj->object_private = ctx->get_free_obj(ctx->objects_storage, OBJECT_PLAYER);
     player_t *player = (player_t *)obj->object_private;
     const player_info_t *info = (const player_info_t *)obj_info->object_private_info;
 
@@ -373,12 +346,8 @@ crack_state_t player_updater(crack_t *ctx, object_t *obj) {
     return CRACK_SUCCESS;
 }
 
-crack_state_t player_destructor(crack_t */*ctx*/, object_t */*obj*/) {
-    return CRACK_SUCCESS;
-}
-
 crack_state_t enemies_constructor(crack_t *ctx, object_t *obj, const object_info_t *obj_info) {
-    obj->object_private = ctx->get_free_obj(ctx->objects_storage, (int)OBJECT_ENEMIES);
+    obj->object_private = ctx->get_free_obj(ctx->objects_storage, OBJECT_ENEMIES);
     enemies_t *enemies = (enemies_t *)obj->object_private;
     const enemies_info_t *info = (const enemies_info_t *)obj_info->object_private_info;
 
@@ -456,12 +425,8 @@ crack_state_t enemies_updater(crack_t *ctx, object_t *obj) {
     return CRACK_SUCCESS;
 }
 
-crack_state_t enemies_destructor(crack_t */*ctx*/, object_t */*obj*/) {
-    return CRACK_SUCCESS;
-}
-
 crack_state_t bullets_constructor(crack_t *ctx, object_t *obj, const object_info_t *obj_info) {
-    obj->object_private = ctx->get_free_obj(ctx->objects_storage, (int)OBJECT_BULLETS);
+    obj->object_private = ctx->get_free_obj(ctx->objects_storage, OBJECT_BULLETS);
     bullets_t *bullets = (bullets_t *)obj->object_private;
     const bullets_info_t *info = (const bullets_info_t *)obj_info->object_private_info;
 
@@ -501,10 +466,6 @@ crack_state_t bullets_updater(crack_t *ctx, object_t *obj) {
         }
         elem = next;
     }
-    return CRACK_SUCCESS;
-}
-
-crack_state_t bullets_destructor(crack_t */*ctx*/, object_t */*obj*/) {
     return CRACK_SUCCESS;
 }
 

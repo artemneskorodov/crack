@@ -64,27 +64,26 @@ static const object_info_t VictoryButtonAgainPublic = {
     .object_private_info    = (const void *)&VictoryButtonAgainPrivate,
 };
 
-crack_state_t victory_ctor(crack_t *ctx, object_type_t *objects_types, screen_t *screen) {
+crack_state_t victory_ctor(crack_t *ctx, screen_t *screen) {
     screen->objects_num = 3;
-    screen->updater = victory_updater;
-    screen->music.openFromFile(VictoryMusicFile);
-    screen->unloader = NULL;
-    screen->background.loadFromFile(VictoryBackground);
-    screen->box.setSize(ScreenSize);
-    screen->box.setPosition(sf::Vector2f(0, 0));
-    screen->box.setTexture(&screen->background);
+    _RETURN_IF_ERROR(screen_ctor   (screen,
+                                    VictoryMusicFile,
+                                    VictoryBackground,
+                                    victory_updater,
+                                    NULL));
     _RETURN_IF_ERROR(object_ctor   (ctx,
                                     screen->objects + VICTORY_OBJ_BUTTON_EXIT,
                                     &VictoryButtonExitPublic,
-                                    objects_types[OBJECT_BUTTON]));
+                                    OBJECT_BUTTON));
     _RETURN_IF_ERROR(object_ctor   (ctx,
                                     screen->objects + VICTORY_OBJ_BUTTON_AGAIN,
                                     &VictoryButtonAgainPublic,
-                                    objects_types[OBJECT_BUTTON]));
+                                    OBJECT_BUTTON));
     _RETURN_IF_ERROR(object_ctor   (ctx,
                                     screen->objects + VICTORY_OBJ_BUTTON_PATCH,
                                     &VictoryButtonPatchPublic,
-                                    objects_types[OBJECT_BUTTON]));
+                                    OBJECT_BUTTON));
+    return CRACK_SUCCESS;
 }
 
 crack_state_t handle_defeat_button_patch(crack_t *ctx, screen_t *screen, object_t *obj) {

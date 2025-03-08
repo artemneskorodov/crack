@@ -4,56 +4,13 @@
 #include "game.h"
 #include "defeat.h"
 #include "victory.h"
+#include "objects.h"
+#include "patch.h"
 
 static const size_t TextOffset = 25;
 
-static crack_state_t updater_button(crack_t *ctx, object_t *obj);
-static crack_state_t constructor_button(crack_t *ctx, object_t *obj, const object_info_t *obj_info);
-static crack_state_t destructor_button(crack_t *ctx, object_t *obj);
-static crack_state_t updater_textbox(crack_t *ctx, object_t *obj);
-static crack_state_t constructor_textbox(crack_t *ctx, object_t *obj, const object_info_t *obj_info);
-static crack_state_t destructor_textbox(crack_t *ctx, object_t *obj);
-static crack_state_t constructor_decoration(crack_t *ctx, object_t *obj, const object_info_t *obj_info);
-static crack_state_t updater_decoration(crack_t *ctx, object_t *obj);
-static crack_state_t destructor_decoration(crack_t *ctx, object_t *obj);
-static crack_state_t constructor_pbar(crack_t *ctx, object_t *obj, const object_info_t *obj_info);
-static crack_state_t updater_pbar(crack_t *ctx, object_t *obj);
-static crack_state_t destructor_pbar(crack_t *ctx, object_t *obj);
-static crack_state_t create_common_objects(crack_t *ctx, object_type_t *object_types);
-
-crack_state_t create_common_objects(crack_t *ctx, object_type_t *object_types) {
-    _RETURN_IF_ERROR(create_object(ctx,
-                                   updater_button,
-                                   constructor_button,
-                                   destructor_button,
-                                   object_types + OBJECT_BUTTON));
-
-    _RETURN_IF_ERROR(create_object(ctx,
-                                   updater_textbox,
-                                   constructor_textbox,
-                                   destructor_textbox,
-                                   object_types + OBJECT_TEXTBOX));
-    _RETURN_IF_ERROR(create_object(ctx,
-                                   updater_decoration,
-                                   constructor_decoration,
-                                   destructor_decoration,
-                                   object_types + OBJECT_DECORATION));
-    _RETURN_IF_ERROR(create_object(ctx,
-                                   updater_pbar,
-                                   constructor_pbar,
-                                   destructor_pbar,
-                                   object_types + OBJECT_PBAR));
-    return CRACK_SUCCESS;
-}
-
-crack_state_t updater_button(crack_t *ctx, object_t *obj) {
-    button_t *button = (button_t *)obj->object_private;
-    ctx->win.draw(button->box);
-    return CRACK_SUCCESS;
-}
-
-crack_state_t constructor_button(crack_t *ctx, object_t *obj, const object_info_t *obj_info) {
-    obj->object_private = ctx->get_free_obj(ctx->objects_storage, (int)OBJECT_BUTTON);
+crack_state_t button_constructor(crack_t *ctx, object_t *obj, const object_info_t *obj_info) {
+    obj->object_private = ctx->get_free_obj(ctx->objects_storage, OBJECT_BUTTON);
     button_t *button = (button_t *)obj->object_private;
     const button_info_t *info = (const button_info_t *)obj_info->object_private_info;
 
@@ -74,30 +31,17 @@ crack_state_t constructor_button(crack_t *ctx, object_t *obj, const object_info_
     return CRACK_SUCCESS;
 }
 
-crack_state_t destructor_button(crack_t */*ctx*/, object_t */*obj*/) {
+crack_state_t button_updater(crack_t *ctx, object_t *obj) {
+    button_t *button = (button_t *)obj->object_private;
+    ctx->win.draw(button->box);
     return CRACK_SUCCESS;
 }
 
-crack_state_t updater_textbox(crack_t *ctx, object_t *obj) {
-    textbox_t *textbox = (textbox_t *)obj->object_private;
-
-    textbox->text.setString(textbox->buffer);
-
-    ctx->win.draw(textbox->box);
-    ctx->win.draw(textbox->text);
-    return CRACK_SUCCESS;
-}
-
-crack_state_t constructor_textbox(crack_t *ctx, object_t *obj, const object_info_t *obj_info) {
-    obj->object_private = ctx->get_free_obj(ctx->objects_storage, (int)OBJECT_TEXTBOX);
+crack_state_t textbox_constructor(crack_t *ctx, object_t *obj, const object_info_t *obj_info) {
+    obj->object_private = ctx->get_free_obj(ctx->objects_storage, OBJECT_TEXTBOX);
     textbox_t *textbox = (textbox_t *)obj->object_private;
     const textbox_info_t *info = (const textbox_info_t *)obj_info->object_private_info;
 
-    textbox->buffer = (char *)calloc(info->capacity + 1, sizeof(char));
-    if(textbox->buffer == NULL) {
-        fprintf(stderr, "Error while allocating textbox buffer\n");
-        return CRACK_MEMORY_ERROR;
-    }
     textbox->capacity = info->capacity;
 
     sf::Vector2f box_pos  = real_pos(info->rel_pos, ScreenSize, obj_info->size);
@@ -129,14 +73,18 @@ crack_state_t constructor_textbox(crack_t *ctx, object_t *obj, const object_info
     return CRACK_SUCCESS;
 }
 
-crack_state_t destructor_textbox(crack_t */*ctx*/, object_t *obj) {
+crack_state_t textbox_updater(crack_t *ctx, object_t *obj) {
     textbox_t *textbox = (textbox_t *)obj->object_private;
-    free(textbox->buffer);
+
+    textbox->text.setString(textbox->buffer);
+
+    ctx->win.draw(textbox->box);
+    ctx->win.draw(textbox->text);
     return CRACK_SUCCESS;
 }
 
-crack_state_t constructor_decoration(crack_t *ctx, object_t *obj, const object_info_t *obj_info) {
-    obj->object_private = ctx->get_free_obj(ctx->objects_storage, (int)OBJECT_DECORATION);
+crack_state_t decoration_constructor(crack_t *ctx, object_t *obj, const object_info_t *obj_info) {
+    obj->object_private = ctx->get_free_obj(ctx->objects_storage, OBJECT_DECORATION);
     decoration_t *decoration = (decoration_t *)obj->object_private;
     const decoration_info_t *info = (const decoration_info_t *)obj_info->object_private_info;
 
@@ -156,7 +104,7 @@ crack_state_t constructor_decoration(crack_t *ctx, object_t *obj, const object_i
     return CRACK_SUCCESS;
 }
 
-crack_state_t updater_decoration(crack_t *ctx, object_t *obj) {
+crack_state_t decoration_updater(crack_t *ctx, object_t *obj) {
     decoration_t *decoration = (decoration_t *)obj->object_private;
     if(decoration->timer.getElapsedTime() > decoration->update_time) {
         decoration->timer.restart();
@@ -168,12 +116,8 @@ crack_state_t updater_decoration(crack_t *ctx, object_t *obj) {
     return CRACK_SUCCESS;
 }
 
-crack_state_t destructor_decoration(crack_t */*ctx*/, object_t */*obj*/) {
-    return CRACK_SUCCESS;
-}
-
-crack_state_t constructor_pbar(crack_t *ctx, object_t *obj, const object_info_t *obj_info) {
-    obj->object_private = ctx->get_free_obj(ctx->objects_storage, (int)OBJECT_PBAR);
+crack_state_t pbar_constructor(crack_t *ctx, object_t *obj, const object_info_t *obj_info) {
+    obj->object_private = ctx->get_free_obj(ctx->objects_storage, OBJECT_PBAR);
     pbar_t *pbar = (pbar_t *)obj->object_private;
     const pbar_info_t *info = (const pbar_info_t *)obj_info->object_private_info;
 
@@ -191,13 +135,9 @@ crack_state_t constructor_pbar(crack_t *ctx, object_t *obj, const object_info_t 
     return CRACK_SUCCESS;
 }
 
-crack_state_t updater_pbar(crack_t *ctx, object_t *obj) {
+crack_state_t pbar_updater(crack_t *ctx, object_t *obj) {
     pbar_t *pbar = (pbar_t *)obj->object_private;
     ctx->win.draw(pbar->box);
-    return CRACK_SUCCESS;
-}
-
-crack_state_t destructor_pbar(crack_t */*ctx*/, object_t */*obj*/) {
     return CRACK_SUCCESS;
 }
 
@@ -206,18 +146,16 @@ char *get_textbox_buffer(object_t *obj) {
     return textbox->buffer;
 }
 
-crack_state_t crack_context_ctor(crack_t *ctx, object_type_t *object_types) {
+crack_state_t crack_context_ctor(crack_t *ctx) {
     ctx->win.create(WindowMode, WindowTitle);
+    ctx->get_free_obj = get_free_object;
 
-    ctx->screens_num = 1;
-
-    _RETURN_IF_ERROR(create_common_objects(ctx, object_types));
-    _RETURN_IF_ERROR(create_game_objects(ctx, object_types));
-
-    _RETURN_IF_ERROR(menu_ctor(ctx, object_types, ctx->screens + SCREEN_MENU));
-    _RETURN_IF_ERROR(game_ctor(ctx, object_types, ctx->screens + SCREEN_GAME));
-    _RETURN_IF_ERROR(defeat_ctor(ctx, object_types, ctx->screens + SCREEN_DEFEAT));
-    _RETURN_IF_ERROR(victory_ctor(ctx, object_types, ctx->screens + SCREEN_VICTORY));
+    _RETURN_IF_ERROR(menu_ctor(ctx, ctx->screens + SCREEN_MENU));
+    _RETURN_IF_ERROR(game_ctor(ctx, ctx->screens + SCREEN_GAME));
+    _RETURN_IF_ERROR(defeat_ctor(ctx, ctx->screens + SCREEN_DEFEAT));
+    _RETURN_IF_ERROR(victory_ctor(ctx, ctx->screens + SCREEN_VICTORY));
+    _RETURN_IF_ERROR(patch_success_ctor(ctx, ctx->screens + SCREEN_PATCH_SUCCESS));
+    _RETURN_IF_ERROR(patch_not_supported_ctor(ctx, ctx->screens + SCREEN_NOT_SUPPORTED));
 
     return CRACK_SUCCESS;
 }
@@ -277,67 +215,6 @@ crack_state_t default_textbox_text(crack_t */*ctx*/, object_t *obj, sf::Event &e
 bool is_button_pressed(crack_t *ctx, object_t *obj) {
     button_t *button = (button_t *)obj->object_private;
     return is_object_focused(ctx->mouse, button->box);
-}
-
-void *get_free_object(void *storage_ptr, int object) {
-    objects_storage_t *storage = (objects_storage_t *)storage_ptr;
-    all_objects_t obj = (all_objects_t)object;
-
-    switch(obj) {
-        case OBJECT_BUTTON: {
-            if(storage->used_buttons == ButtonObjectNum) {
-                fprintf(stderr, "All buttons are used\n");
-                return NULL;
-            }
-            return &storage->button_objs[storage->used_buttons++];
-        }
-        case OBJECT_TEXTBOX: {
-            if(storage->used_textboxs == TextboxObjectsNum) {
-                fprintf(stderr, "All textboxs are used\n");
-                return NULL;
-            }
-            return &storage->textbox_objs[storage->used_textboxs++];
-        }
-        case OBJECT_PLAYER: {
-            if(storage->used_players == PlayerObjectsNum) {
-                fprintf(stderr, "All players are used\n");
-                return NULL;
-            }
-            return &storage->player_objs[storage->used_players++];
-        }
-        case OBJECT_ENEMIES: {
-            if(storage->used_enemies == EnemiesObjectsNum) {
-                fprintf(stderr, "All enemies are used\n");
-                return NULL;
-            }
-            return &storage->enemies_objs[storage->used_enemies++];
-        }
-        case OBJECT_BULLETS: {
-            if(storage->used_bullets == BulletsObjectsNum) {
-                fprintf(stderr, "All bullets are used\n");
-                return NULL;
-            }
-            return &storage->bullets_objs[storage->used_bullets++];
-        }
-        case OBJECT_DECORATION: {
-            if(storage->used_decorations == DecorationObjectsNum) {
-                fprintf(stderr, "All decorations are used\n");
-                return NULL;
-            }
-            return &storage->decoration_objs[storage->used_decorations++];
-        }
-        case OBJECT_PBAR: {
-            if(storage->used_pbars == PBarObjectsNum) {
-                fprintf(stderr, "All progress bars are used\n");
-                return NULL;
-            }
-            return &storage->pbar_objs[storage->used_pbars++];
-        }
-        case OBJECT_INVALID:
-        default:
-            fprintf(stderr, "Unknown object requested");
-            return NULL;
-    }
 }
 
 crack_state_t handle_button_exit(crack_t *ctx, screen_t *screen, object_t *obj) {

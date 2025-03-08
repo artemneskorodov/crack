@@ -1,5 +1,6 @@
 #include "menu.h"
 #include "common.h"
+#include "patch.h"
 
 enum menu_objects_indexes_t {
     MENU_OBJ_BUTTON_START = 0,
@@ -75,8 +76,8 @@ static const object_info_t MenuButtonExitPublic = {
 static const textbox_info_t MenuInputTextPrivate = {
     .font_name              = "./styles/fonts/main_font.ttf",
     .text_sound             = "./styles/sounds/text_type.wav",
-    .text_size              = 60,
-    .capacity               = 40,
+    .text_size              = 45,
+    .capacity               = 56,
     .texture_size           = sf::Vector2i(3000, 370),
     .texture_focused        = sf::Vector2i(0, 370),
     .texture_unfocused      = sf::Vector2i(0, 0),
@@ -95,32 +96,25 @@ static const object_info_t MenuInputTextPublic = {
 
 /*============================================================================*/
 
-crack_state_t create_menu_objects(crack_t */*ctx*/, object_type_t */*object_types*/) {
-    return CRACK_SUCCESS;
-}
-
-crack_state_t menu_ctor(crack_t *ctx, object_type_t *object_types, screen_t *screen) {
+crack_state_t menu_ctor(crack_t *ctx, screen_t *screen) {
     screen->objects_num = 3;
-    screen->updater = menu_updater;
-    screen->music.openFromFile(MenuMusicFile);
-    screen->unloader = NULL;
-    screen->background.loadFromFile(MenuBackground);
-    screen->box.setSize(ScreenSize);
-    screen->box.setPosition(sf::Vector2f(0, 0));
-    screen->box.setTexture(&screen->background);
-
-    _RETURN_IF_ERROR(object_ctor(ctx,
-                                 screen->objects + MENU_OBJ_BUTTON_START,
-                                 &MenuButtonStartPublic,
-                                 object_types[OBJECT_BUTTON]));
-    _RETURN_IF_ERROR(object_ctor(ctx,
-                                 screen->objects + MENU_OBJ_BUTTON_EXIT,
-                                 &MenuButtonExitPublic,
-                                 object_types[OBJECT_BUTTON]));
-    _RETURN_IF_ERROR(object_ctor(ctx,
-                                 screen->objects + MENU_OBJ_INPUT_TEXT,
-                                 &MenuInputTextPublic,
-                                 object_types[OBJECT_TEXTBOX]));
+    _RETURN_IF_ERROR(screen_ctor   (screen,
+                                    MenuMusicFile,
+                                    MenuBackground,
+                                    menu_updater,
+                                    NULL))
+    _RETURN_IF_ERROR(object_ctor   (ctx,
+                                    screen->objects + MENU_OBJ_BUTTON_START,
+                                    &MenuButtonStartPublic,
+                                    OBJECT_BUTTON));
+    _RETURN_IF_ERROR(object_ctor   (ctx,
+                                    screen->objects + MENU_OBJ_BUTTON_EXIT,
+                                    &MenuButtonExitPublic,
+                                    OBJECT_BUTTON));
+    _RETURN_IF_ERROR(object_ctor   (ctx,
+                                    screen->objects + MENU_OBJ_INPUT_TEXT,
+                                    &MenuInputTextPublic,
+                                    OBJECT_TEXTBOX));
     return CRACK_SUCCESS;
 }
 
@@ -152,8 +146,20 @@ crack_state_t handle_menu_button_start(crack_t *ctx, screen_t *screen, object_t 
                 return defeat_result;
             }
         }
+        else {
+            return game_result;
+        }
     }
-    crack_state_t patch_result = run_screen(ctx, ctx->screens + SCREEN_PATCH);
+    char *filename = get_textbox_buffer(&screen->objects[MENU_OBJ_INPUT_TEXT]);
+    crack_state_t patch_result = patch(filename);
+    if(patch_result == CRACK_NOT_SUPPORTED) {
+        _RETURN_IF_ERROR(run_screen(ctx, ctx->screens + SCREEN_NOT_SUPPORTED));
+        return CRACK_SUCCESS;
+    }
+    else if(patch_result != CRACK_SUCCESS) {
+        return patch_result;
+    }
+    _RETURN_IF_ERROR(run_screen(ctx, ctx->screens + SCREEN_PATCH_SUCCESS));
     screen->music.play();
 
     return patch_result;

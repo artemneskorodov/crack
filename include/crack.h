@@ -9,7 +9,6 @@
 #include <SFML/System.hpp>
 
 static const size_t MaxObjectTypesNum       = 10;
-static const size_t ScreensNumber           = 5;
 static const size_t MaxObjectsNumber        = 10;
 
 struct crack_t;
@@ -17,8 +16,6 @@ struct screen_t;
 struct object_t;
 struct object_info_t;
 struct sfml_obj_allocator_t;
-
-typedef long int object_type_t;
 
 enum crack_state_t {
     CRACK_SUCCESS                           = 0,
@@ -30,11 +27,29 @@ enum crack_state_t {
     CRACK_GAME_WON                          = 6,
     CRACK_PLAY_AGAIN                        = 7,
     CRACK_GO_PATCH                          = 8,
+    CRACK_NOT_SUPPORTED                     = 9,
+    CRACK_READING_FILE_ERROR                = 10,
+    CRACK_WRITING_FILE_ERROR                = 11,
+    CRACK_NO_SUPPORTED_PROT                 = 12,
+    CRACK_READING_SUPPORTED_ERROR           = 13,
 };
 
-typedef crack_state_t (*updater_t     )(crack_t *, object_t *);
-typedef crack_state_t (*constructor_t )(crack_t *, object_t *, const object_info_t *);
-typedef crack_state_t (*destructor_t  )(crack_t *, object_t *);
+enum object_types_t {
+    OBJECT_EMPTY                            = 0,
+    OBJECT_BUTTON                           = 1,
+    OBJECT_TEXTBOX                          = 2,
+    OBJECT_PLAYER                           = 3,
+    OBJECT_ENEMIES                          = 4,
+    OBJECT_BULLETS                          = 5,
+    OBJECT_DECORATION                       = 6,
+    OBJECT_PBAR                             = 7,
+
+    /*
+    constant OBJECT_MAX is used as max number of different types
+    add constants in this enum only lower than it, or change it
+    */
+    OBJECT_MAX                              = 10,
+};
 
 struct object_info_t {
     crack_state_t     (*on_mouse_click )(crack_t *, screen_t *, object_t *);
@@ -47,7 +62,7 @@ struct object_info_t {
 };
 
 struct object_t {
-    object_type_t       type;
+    object_types_t      type;
     sf::Texture         texture;
     crack_state_t     (*on_mouse_click )(crack_t *, screen_t *, object_t *);
     crack_state_t     (*on_mouse_move  )(crack_t *, object_t *);
@@ -70,34 +85,39 @@ struct screen_t {
     sf::Clock           timer;
 };
 
+enum screens_index_t {
+    SCREEN_MENU                             = 1,
+    SCREEN_GAME                             = 2,
+    SCREEN_VICTORY                          = 3,
+    SCREEN_DEFEAT                           = 4,
+    SCREEN_NOT_SUPPORTED                    = 5,
+    SCREEN_PATCH_SUCCESS                    = 6,
+
+    SCREEN_MAX                              = 7,
+};
+
 struct crack_t {
-    screen_t            screens[ScreensNumber];
-    size_t              screens_num;
-    updater_t           updater[MaxObjectTypesNum];
-    constructor_t       constructor[MaxObjectTypesNum];
-    destructor_t        destructor[MaxObjectTypesNum];
-    size_t              objects_number;
+    screen_t            screens[SCREEN_MAX];
     sf::Vector2f        mouse;
     sf::RenderWindow    win;
     sf::Music           music;
-    sf::Sound           sound;//TODO
     void               *objects_storage;
-    void *            (*get_free_obj)(void *, int);
+    void *            (*get_free_obj)(void *, object_types_t);
 };
-
-crack_state_t   create_object      (crack_t                *ctx,
-                                    updater_t               updater,
-                                    constructor_t           constructor,
-                                    destructor_t            destructor,
-                                    object_type_t          *obj_type);
 
 crack_state_t   object_ctor        (crack_t                *ctx,
                                     object_t               *obj,
                                     const object_info_t    *obj_info,
-                                    object_type_t           type);
+                                    object_types_t          type);
 
 crack_state_t   run_screen         (crack_t                *ctx,
                                     screen_t               *screen);
+
+crack_state_t   screen_ctor        (screen_t               *screen,
+                                    const char             *music,
+                                    const char             *texture,
+                                    crack_state_t         (*updater )(crack_t *, screen_t *),
+                                    crack_state_t         (*unloader)(crack_t *, screen_t *));
 
 #define _RETURN_IF_ERROR(...) {                 \
     crack_state_t _error_code = (__VA_ARGS__);  \

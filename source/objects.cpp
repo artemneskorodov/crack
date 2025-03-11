@@ -6,7 +6,8 @@
 
 void *get_free_object(void *storage_ptr, object_types_t type){
     objects_storage_t *storage = (objects_storage_t *)storage_ptr;
-
+    /*------------------------------------------------------------------------*/
+    /* Returning pointers to structures depending on type                     */
     switch(type) {
         case OBJECT_BUTTON: {
             if(storage->used_buttons == ButtonObjectNum) {
@@ -63,6 +64,7 @@ void *get_free_object(void *storage_ptr, object_types_t type){
             fprintf(stderr, "Unknown object requested");
             return NULL;
     }
+    /*------------------------------------------------------------------------*/
 }
 
 /*============================================================================*/

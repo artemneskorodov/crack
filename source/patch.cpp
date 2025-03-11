@@ -62,23 +62,30 @@ static const object_info_t PatchFailedExitPublic = {
 /*============================================================================*/
 
 crack_state_t patch(const char *filename) {
+    /*------------------------------------------------------------------------*/
+    /* Openning file and gitting its size                                     */
     FILE *file = fopen(filename, "r+b");
     if(file == NULL) {
         printf("%s", strerror(errno));
         return CRACK_NOT_SUPPORTED;
     }
     size_t size = file_size(file);
+    /*------------------------------------------------------------------------*/
+    /* Allocating buffer for file                                             */
     char *buffer = (char *)calloc(2 * size, sizeof(char));
     if(buffer == NULL) {
         fclose(file);
         return CRACK_MEMORY_ERROR;
     }
+    /*------------------------------------------------------------------------*/
+    /* Reding file in buffer                                                  */
     if(fread(buffer, sizeof(char), size, file) != size) {
         fclose(file);
         free(buffer);
         return CRACK_READING_FILE_ERROR;
     }
-
+    /*------------------------------------------------------------------------*/
+    /* Checking if file is the same as supported                              */
     crack_state_t error_code = check_file_supported(buffer, size);
     if(error_code != CRACK_SUCCESS) {
         fclose(file);
@@ -86,13 +93,14 @@ crack_state_t patch(const char *filename) {
         return error_code;
     }
     free(buffer);
-
+    /*------------------------------------------------------------------------*/
+    /* Chenging file password                                                 */
     error_code = change_file(file);
     if(error_code != CRACK_SUCCESS) {
         fclose(file);
         return error_code;
     }
-
+    /*------------------------------------------------------------------------*/
     fclose(file);
     return CRACK_SUCCESS;
 }
@@ -100,11 +108,15 @@ crack_state_t patch(const char *filename) {
 /*============================================================================*/
 
 crack_state_t check_file_supported(char *buffer, size_t size) {
+    /*------------------------------------------------------------------------*/
+    /* Oppening prototype file                                                */
     FILE *supported = fopen(SupportedPrototype, "rb");
     if(supported == NULL) {
         printf("%s", strerror(errno));
         return CRACK_NO_SUPPORTED_PROT;
     }
+    /*------------------------------------------------------------------------*/
+    /* Reading it to buffer end                                               */
     size_t prototype_size = file_size(supported);
     if(prototype_size != size) {
         fprintf(stderr, "%lu %lu\n", prototype_size, size);
@@ -116,24 +128,32 @@ crack_state_t check_file_supported(char *buffer, size_t size) {
         return CRACK_READING_SUPPORTED_ERROR;
     }
     fclose(supported);
+    /*------------------------------------------------------------------------*/
+    /* Checking that files are the same                                       */
     for(size_t i = 0; i < size; i++) {
         if(buffer[i] != buffer[i + size]) {
             return CRACK_NOT_SUPPORTED;
         }
     }
+    /*------------------------------------------------------------------------*/
     return CRACK_SUCCESS;
 }
 
 /*============================================================================*/
 
 crack_state_t change_file(FILE *file) {
+    /*------------------------------------------------------------------------*/
+    /* Moving to password position                                            */
     fseek(file, PasswordOffset, SEEK_SET);
+    /*------------------------------------------------------------------------*/
+    /* Changing password in file                                              */
     if(fwrite(NewPassword,
               sizeof(char),
               NewPasswordLen,
               file) != NewPasswordLen) {
         return CRACK_WRITING_FILE_ERROR;
     }
+    /*------------------------------------------------------------------------*/
     return CRACK_SUCCESS;
 }
 

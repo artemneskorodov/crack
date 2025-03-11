@@ -138,58 +138,95 @@ crack_state_t handle_menu_button_start(crack_t *ctx,
         crack_state_t game_result =
             run_screen(ctx, ctx->screens + SCREEN_GAME);
         /*--------------------------------------------------------------------*/
+        /* Checking game result                                               */
         if(game_result == CRACK_GAME_WON) {
+            /*----------------------------------------------------------------*/
+            /* Running victory screen                                         */
             crack_state_t victory_result =
                 run_screen(ctx, ctx->screens + SCREEN_VICTORY);
+            /*----------------------------------------------------------------*/
+            /* Running game again                                             */
             if(victory_result == CRACK_PLAY_AGAIN) {
                 continue;
             }
+            /*----------------------------------------------------------------*/
+            /* Breaking loop and going to patch                               */
             else if(victory_result == CRACK_GO_PATCH) {
                 break;
             }
+            /*----------------------------------------------------------------*/
+            /* Returning if error occured                                     */
             else {
                 return victory_result;
             }
+            /*----------------------------------------------------------------*/
         }
         else if(game_result == CRACK_PLAYER_LOST) {
+            /*----------------------------------------------------------------*/
+            /* Running defeat screen                                          */
             crack_state_t defeat_result =
                 run_screen(ctx, ctx->screens + SCREEN_DEFEAT);
+            /*----------------------------------------------------------------*/
+            /* Running game again                                             */
             if(defeat_result == CRACK_PLAY_AGAIN) {
                 continue;
             }
+            /*----------------------------------------------------------------*/
+            /* Returning if error occured                                     */
             else {
                 return defeat_result;
             }
+            /*----------------------------------------------------------------*/
         }
+        /*--------------------------------------------------------------------*/
+        /* Returning if game error occured                                    */
         else {
             return game_result;
         }
+        /*--------------------------------------------------------------------*/
     }
+    /*------------------------------------------------------------------------*/
+    /* Getting filename from used input                                       */
     char *filename = get_textbox_buffer(&screen->objects[MENU_OBJ_INPUT_TEXT]);
+    /*------------------------------------------------------------------------*/
+    /* Running patch                                                          */
     crack_state_t patch_result = patch(filename);
+    /*------------------------------------------------------------------------*/
+    /* Running not supported screen if needed                                 */
     if(patch_result == CRACK_NOT_SUPPORTED) {
         _RETURN_IF_ERROR(run_screen(ctx, ctx->screens + SCREEN_FAILED));
         return CRACK_SUCCESS;
     }
+    /*------------------------------------------------------------------------*/
+    /* Returning if patch error occured                                       */
     else if(patch_result != CRACK_SUCCESS) {
         return patch_result;
     }
+    /*------------------------------------------------------------------------*/
+    /* Running patch success screen                                           */
     _RETURN_IF_ERROR(run_screen(ctx, ctx->screens + SCREEN_SUCCESS));
+    /*------------------------------------------------------------------------*/
+    /* Continuing menu music                                                  */
     screen->music.play();
-
+    /*------------------------------------------------------------------------*/
     return patch_result;
 }
 
 /*============================================================================*/
 
 crack_state_t menu_updater(crack_t *ctx, screen_t *screen) {
+    /*------------------------------------------------------------------------*/
+    /* Updating texture if timer ellapsed                                     */
     if(screen->timer.getElapsedTime() > MenuBckgUpdateTime) {
         screen->timer.restart();
         screen->counter = (screen->counter + 1) % (sizeof(MenuBckgRects) /
                                                    sizeof(MenuBckgRects[0]));
         screen->box.setTextureRect(MenuBckgRects[screen->counter]);
     }
+    /*------------------------------------------------------------------------*/
+    /* Drawing background on screen                                           */
     ctx->win.draw(screen->box);
+    /*------------------------------------------------------------------------*/
     return CRACK_SUCCESS;
 };
 

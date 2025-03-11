@@ -1,19 +1,29 @@
+/*============================================================================*/
+
 #ifndef OBJECTS_H
 #define OBJECTS_H
 
+/*============================================================================*/
+
 #include "crack.h"
 
-static const size_t EnemiesNum              = 20;
-static const size_t BulletsNum              = 15;
-static const size_t MaxDecorationFrames     = 10;
-static const size_t MaxPBarFrames           = 10;
-static const size_t MaxTextBufferSize       = 64;
+/*============================================================================*/
+
+static const size_t         EnemiesNum          = 20;
+static const size_t         BulletsNum          = 15;
+static const size_t         MaxDecorationFrames = 10;
+static const size_t         MaxPBarFrames       = 10;
+static const size_t         MaxTextBufferSize   = 64;
+
+/*============================================================================*/
 
 struct button_t {
     sf::RectangleShape  box;
     sf::IntRect         focused;
     sf::IntRect         unfocused;
 };
+
+/*============================================================================*/
 
 struct textbox_t {
     char                buffer[MaxTextBufferSize];
@@ -28,6 +38,8 @@ struct textbox_t {
     sf::Sound           text_sound;
 };
 
+/*============================================================================*/
+
 struct decoration_t {
     sf::RectangleShape  box;
     sf::Time            update_time;
@@ -37,6 +49,8 @@ struct decoration_t {
     size_t              current_frame;
 };
 
+/*============================================================================*/
+
 struct pbar_t {
     sf::RectangleShape  box;
     sf::IntRect         frames[MaxPBarFrames];
@@ -44,10 +58,14 @@ struct pbar_t {
     size_t              current_frame;
 };
 
+/*============================================================================*/
+
 struct pool_t {
     int                 prev;
     int                 next;
 };
+
+/*============================================================================*/
 
 struct player_t {
     sf::RectangleShape  box;
@@ -55,6 +73,8 @@ struct player_t {
     float               speed;
     sf::Vector2f        start_pos;
 };
+
+/*============================================================================*/
 
 struct enemies_t {
     sf::RectangleShape  boxes[EnemiesNum];
@@ -75,6 +95,8 @@ struct enemies_t {
     sf::Sound           hit_sound;
 };
 
+/*============================================================================*/
+
 struct bullets_t {
     sf::RectangleShape  boxes[BulletsNum];
     float               velocity;
@@ -85,6 +107,8 @@ struct bullets_t {
     int                 inactive_head;
 };
 
+/*============================================================================*/
+
 static const size_t PlayerObjectsNum        = 1;
 static const size_t EnemiesObjectsNum       = 1;
 static const size_t BulletsObjectsNum       = 1;
@@ -92,6 +116,8 @@ static const size_t ButtonObjectNum         = 9;
 static const size_t TextboxObjectsNum       = 1;
 static const size_t DecorationObjectsNum    = 1;
 static const size_t PBarObjectsNum          = 1;
+
+/*============================================================================*/
 
 struct objects_storage_t {
     player_t            player_objs[PlayerObjectsNum];
@@ -110,7 +136,13 @@ struct objects_storage_t {
     size_t              used_pbars;
 };
 
+/*============================================================================*/
+
 void           *get_free_object        (void               *storage,
                                         object_types_t      object_type);
 
+/*============================================================================*/
+
 #endif
+
+/*============================================================================*/

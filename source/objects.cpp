@@ -1,4 +1,8 @@
+/*============================================================================*/
+
 #include "objects.h"
+
+/*============================================================================*/
 
 void *get_free_object(void *storage_ptr, object_types_t type){
     objects_storage_t *storage = (objects_storage_t *)storage_ptr;
@@ -60,3 +64,5 @@ void *get_free_object(void *storage_ptr, object_types_t type){
             return NULL;
     }
 }
+
+/*============================================================================*/

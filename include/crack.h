@@ -1,5 +1,9 @@
+/*============================================================================*/
+
 #ifndef CRACK_H
 #define CRACK_H
+
+/*============================================================================*/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,14 +12,20 @@
 #include <SFML/Audio.hpp>
 #include <SFML/System.hpp>
 
-static const size_t MaxObjectTypesNum       = 10;
-static const size_t MaxObjectsNumber        = 10;
+/*============================================================================*/
+
+static const size_t         MaxObjectTypesNum   = 10;
+static const size_t         MaxObjectsNumber    = 10;
+
+/*============================================================================*/
 
 struct crack_t;
 struct screen_t;
 struct object_t;
 struct object_info_t;
 struct sfml_obj_allocator_t;
+
+/*============================================================================*/
 
 enum crack_state_t {
     CRACK_SUCCESS                           = 0,
@@ -34,6 +44,8 @@ enum crack_state_t {
     CRACK_READING_SUPPORTED_ERROR           = 13,
 };
 
+/*============================================================================*/
+
 enum object_types_t {
     OBJECT_EMPTY                            = 0,
     OBJECT_BUTTON                           = 1,
@@ -51,6 +63,8 @@ enum object_types_t {
     OBJECT_MAX                              = 10,
 };
 
+/*============================================================================*/
+
 struct object_info_t {
     crack_state_t     (*on_mouse_click )(crack_t *, screen_t *, object_t *);
     crack_state_t     (*on_mouse_move  )(crack_t *, object_t *);
@@ -60,6 +74,8 @@ struct object_info_t {
     sf::Vector2f        size;
     const void         *object_private_info;
 };
+
+/*============================================================================*/
 
 struct object_t {
     object_types_t      type;
@@ -71,6 +87,8 @@ struct object_t {
     bool                waits_for_text;
     void               *object_private;
 };
+
+/*============================================================================*/
 
 struct screen_t {
     object_t            objects[MaxObjectsNumber];
@@ -85,16 +103,20 @@ struct screen_t {
     sf::Clock           timer;
 };
 
+/*============================================================================*/
+
 enum screens_index_t {
     SCREEN_MENU                             = 1,
     SCREEN_GAME                             = 2,
     SCREEN_VICTORY                          = 3,
     SCREEN_DEFEAT                           = 4,
-    SCREEN_NOT_SUPPORTED                    = 5,
-    SCREEN_PATCH_SUCCESS                    = 6,
+    SCREEN_FAILED                           = 5,
+    SCREEN_SUCCESS                          = 6,
 
     SCREEN_MAX                              = 7,
 };
+
+/*============================================================================*/
 
 struct crack_t {
     screen_t            screens[SCREEN_MAX];
@@ -104,6 +126,8 @@ struct crack_t {
     void               *objects_storage;
     void *            (*get_free_obj)(void *, object_types_t);
 };
+
+/*============================================================================*/
 
 crack_state_t   object_ctor        (crack_t                *ctx,
                                     object_t               *obj,
@@ -119,6 +143,8 @@ crack_state_t   screen_ctor        (screen_t               *screen,
                                     crack_state_t         (*updater )(crack_t *, screen_t *),
                                     crack_state_t         (*unloader)(crack_t *, screen_t *));
 
+/*============================================================================*/
+
 #define _RETURN_IF_ERROR(...) {                 \
     crack_state_t _error_code = (__VA_ARGS__);  \
     if(_error_code != CRACK_SUCCESS) {          \
@@ -126,4 +152,8 @@ crack_state_t   screen_ctor        (screen_t               *screen,
     }                                           \
 }                                               \
 
+/*============================================================================*/
+
 #endif
+
+/*============================================================================*/

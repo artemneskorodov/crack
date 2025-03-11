@@ -1,11 +1,27 @@
+/*============================================================================*/
+
 #include "crack.h"
 #include "common.h"
 
-crack_state_t handle_mouse_moved(crack_t *ctx, screen_t *screen, sf::Event &event);
-crack_state_t handle_mouse_pressed(crack_t *ctx, screen_t *screen);
-crack_state_t handle_text_entered(crack_t *ctx, screen_t *screen, sf::Event &event);
+/*============================================================================*/
 
-crack_state_t object_ctor(crack_t *ctx, object_t *obj, const object_info_t *obj_info, object_types_t type) {
+static crack_state_t handle_mouse_moved    (crack_t *ctx,
+                                            screen_t *screen,
+                                            sf::Event &event);
+
+static crack_state_t handle_mouse_pressed  (crack_t *ctx,
+                                            screen_t *screen);
+
+static crack_state_t handle_text_entered   (crack_t *ctx,
+                                            screen_t *screen,
+                                            sf::Event &event);
+
+/*============================================================================*/
+
+crack_state_t object_ctor(crack_t              *ctx,
+                          object_t             *obj,
+                          const object_info_t  *obj_info,
+                          object_types_t        type) {
     obj->type = type;
     obj->texture.loadFromFile(obj_info->texture);
 
@@ -17,6 +33,8 @@ crack_state_t object_ctor(crack_t *ctx, object_t *obj, const object_info_t *obj_
     _RETURN_IF_ERROR(ObjectTypesInfo[type].constructor(ctx, obj, obj_info));
     return CRACK_SUCCESS;
 }
+
+/*============================================================================*/
 
 crack_state_t screen_ctor(screen_t         *screen,
                           const char       *music,
@@ -33,6 +51,8 @@ crack_state_t screen_ctor(screen_t         *screen,
     return CRACK_SUCCESS;
 }
 
+/*============================================================================*/
+
 #define _END_SCREEN_IF_ERROR(...) {                 \
     crack_state_t _error_code = (__VA_ARGS__);      \
     if(_error_code != CRACK_SUCCESS) {              \
@@ -43,6 +63,8 @@ crack_state_t screen_ctor(screen_t         *screen,
         return _error_code;                         \
     }                                               \
 }                                                   \
+
+/*============================================================================*/
 
 crack_state_t run_screen(crack_t *ctx, screen_t *screen) {
     screen->music.play();
@@ -65,7 +87,10 @@ crack_state_t run_screen(crack_t *ctx, screen_t *screen) {
 
             for(size_t i = 0; i < screen->objects_num; i++) {
                 if(screen->objects[i].handle_buttons != NULL) {
-                    _END_SCREEN_IF_ERROR(screen->objects[i].handle_buttons(ctx, &screen->objects[i]));
+                    _END_SCREEN_IF_ERROR(
+                        screen->objects[i].handle_buttons(ctx,
+                                                          &screen->objects[i])
+                    );
                 }
             }
         }
@@ -76,7 +101,11 @@ crack_state_t run_screen(crack_t *ctx, screen_t *screen) {
         }
 
         for(size_t i = 0; i < screen->objects_num; i++) {
-            _END_SCREEN_IF_ERROR(ObjectTypesInfo[screen->objects[i].type].updater(ctx, screen->objects + i));
+            object_types_t type = screen->objects[i].type;
+            _END_SCREEN_IF_ERROR(
+                ObjectTypesInfo[type].updater(ctx,
+                                              screen->objects + i)
+            );
         }
 
         ctx->win.display();
@@ -89,9 +118,15 @@ crack_state_t run_screen(crack_t *ctx, screen_t *screen) {
     return CRACK_SUCCESS;
 }
 
+/*============================================================================*/
+
 #undef _END_SCREEN_IF_ERROR
 
-crack_state_t handle_mouse_moved(crack_t *ctx, screen_t *screen, sf::Event &event) {
+/*============================================================================*/
+
+crack_state_t handle_mouse_moved(crack_t   *ctx,
+                                 screen_t  *screen,
+                                 sf::Event &event) {
     ctx->mouse.x = event.mouseMove.x;
     ctx->mouse.y = event.mouseMove.y;
 
@@ -104,6 +139,8 @@ crack_state_t handle_mouse_moved(crack_t *ctx, screen_t *screen, sf::Event &even
     return CRACK_SUCCESS;
 }
 
+/*============================================================================*/
+
 crack_state_t handle_mouse_pressed(crack_t *ctx, screen_t *screen) {
     for(size_t i = 0; i < screen->objects_num; i++) {
         object_t *obj = &screen->objects[i];
@@ -114,7 +151,11 @@ crack_state_t handle_mouse_pressed(crack_t *ctx, screen_t *screen) {
     return CRACK_SUCCESS;
 }
 
-crack_state_t handle_text_entered(crack_t *ctx, screen_t *screen, sf::Event &event) {
+/*============================================================================*/
+
+crack_state_t handle_text_entered(crack_t      *ctx,
+                                  screen_t     *screen,
+                                  sf::Event    &event) {
     for(size_t i = 0; i < screen->objects_num; i++) {
         object_t *obj = &screen->objects[i];
         if(!obj->waits_for_text) {
@@ -127,3 +168,4 @@ crack_state_t handle_text_entered(crack_t *ctx, screen_t *screen, sf::Event &eve
     return CRACK_SUCCESS;
 }
 
+/*============================================================================*/

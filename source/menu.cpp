@@ -1,37 +1,36 @@
+/*============================================================================*/
+
 #include "menu.h"
 #include "common.h"
 #include "patch.h"
 
+/*============================================================================*/
+
 enum menu_objects_indexes_t {
-    MENU_OBJ_BUTTON_START = 0,
-    MENU_OBJ_BUTTON_EXIT = 1,
-    MENU_OBJ_INPUT_TEXT = 2,
+    MENU_OBJ_BUTTON_START                   = 0,
+    MENU_OBJ_BUTTON_EXIT                    = 1,
+    MENU_OBJ_INPUT_TEXT                     = 2,
 };
 
-/*
-    PUBLIC
-    .on_mouse_click         =
-    .on_mouse_focus         =
-    .on_mouse_unfocus       =
-    .on_text_entered        =
-    .on_mouse_missclick     =
-    .handle_buttons         =
-    .texture                =
-    .size                   =
-    .object_private_info    =
-*/
+/*============================================================================*/
 
-static const char *MenuBackground = "./styles/img/menu_background.png";
-static const char *MenuMusicFile = "./styles/music/menu_music.mp3";
-static const sf::IntRect MenuBackgroundRects[] = {
+static const char          *MenuBackground          = "./styles/img/menu_background.png";
+static const char          *MenuMusicFile           = "./styles/music/menu_music.mp3";
+static const sf::IntRect    MenuBckgRects[]   = {
     sf::IntRect(   0,    0, 3200, 2560),
     sf::IntRect(3200,    0, 3200, 2560),
     sf::IntRect(   0, 2560, 3200, 2560),
 };
-static const sf::Time MenuBackgroundUpdateTime = sf::milliseconds(500);
+static const sf::Time       MenuBckgUpdateTime      = sf::milliseconds(500);
 
-static crack_state_t handle_menu_button_start(crack_t *ctx, screen_t *screen, object_t *obj);
-static crack_state_t menu_updater(crack_t *ctx, screen_t *screen);
+/*============================================================================*/
+
+static crack_state_t handle_menu_button_start  (crack_t    *ctx,
+                                                screen_t   *screen,
+                                                object_t   *obj);
+
+static crack_state_t menu_updater              (crack_t    *ctx,
+                                                screen_t   *screen);
 
 /*============================================================================*/
 
@@ -118,15 +117,21 @@ crack_state_t menu_ctor(crack_t *ctx, screen_t *screen) {
     return CRACK_SUCCESS;
 }
 
-crack_state_t handle_menu_button_start(crack_t *ctx, screen_t *screen, object_t *obj) {
+/*============================================================================*/
+
+crack_state_t handle_menu_button_start(crack_t *ctx,
+                                       screen_t *screen,
+                                       object_t *obj) {
     if(!is_button_pressed(ctx, obj)) {
         return CRACK_SUCCESS;
     }
     screen->music.stop();
     while(true) {
-        crack_state_t game_result = run_screen(ctx, ctx->screens + SCREEN_GAME);
+        crack_state_t game_result =
+            run_screen(ctx, ctx->screens + SCREEN_GAME);
         if(game_result == CRACK_GAME_WON) {
-            crack_state_t victory_result = run_screen(ctx, ctx->screens + SCREEN_VICTORY);
+            crack_state_t victory_result =
+                run_screen(ctx, ctx->screens + SCREEN_VICTORY);
             if(victory_result == CRACK_PLAY_AGAIN) {
                 continue;
             }
@@ -138,7 +143,8 @@ crack_state_t handle_menu_button_start(crack_t *ctx, screen_t *screen, object_t 
             }
         }
         else if(game_result == CRACK_PLAYER_LOST) {
-            crack_state_t defeat_result = run_screen(ctx, ctx->screens + SCREEN_DEFEAT);
+            crack_state_t defeat_result =
+                run_screen(ctx, ctx->screens + SCREEN_DEFEAT);
             if(defeat_result == CRACK_PLAY_AGAIN) {
                 continue;
             }
@@ -153,24 +159,29 @@ crack_state_t handle_menu_button_start(crack_t *ctx, screen_t *screen, object_t 
     char *filename = get_textbox_buffer(&screen->objects[MENU_OBJ_INPUT_TEXT]);
     crack_state_t patch_result = patch(filename);
     if(patch_result == CRACK_NOT_SUPPORTED) {
-        _RETURN_IF_ERROR(run_screen(ctx, ctx->screens + SCREEN_NOT_SUPPORTED));
+        _RETURN_IF_ERROR(run_screen(ctx, ctx->screens + SCREEN_FAILED));
         return CRACK_SUCCESS;
     }
     else if(patch_result != CRACK_SUCCESS) {
         return patch_result;
     }
-    _RETURN_IF_ERROR(run_screen(ctx, ctx->screens + SCREEN_PATCH_SUCCESS));
+    _RETURN_IF_ERROR(run_screen(ctx, ctx->screens + SCREEN_SUCCESS));
     screen->music.play();
 
     return patch_result;
 }
 
+/*============================================================================*/
+
 crack_state_t menu_updater(crack_t *ctx, screen_t *screen) {
-    if(screen->timer.getElapsedTime() > MenuBackgroundUpdateTime) {
+    if(screen->timer.getElapsedTime() > MenuBckgUpdateTime) {
         screen->timer.restart();
-        screen->counter = (screen->counter + 1) % (sizeof(MenuBackgroundRects) / sizeof(MenuBackgroundRects[0]));
-        screen->box.setTextureRect(MenuBackgroundRects[screen->counter]);
+        screen->counter = (screen->counter + 1) % (sizeof(MenuBckgRects) /
+                                                   sizeof(MenuBckgRects[0]));
+        screen->box.setTextureRect(MenuBckgRects[screen->counter]);
     }
     ctx->win.draw(screen->box);
     return CRACK_SUCCESS;
 };
+
+/*============================================================================*/

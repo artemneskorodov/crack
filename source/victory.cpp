@@ -1,16 +1,30 @@
+/*============================================================================*/
+
 #include "victory.h"
 
+/*============================================================================*/
+
 enum victory_object_t {
-    VICTORY_OBJ_BUTTON_EXIT = 0,
-    VICTORY_OBJ_BUTTON_AGAIN = 1,
-    VICTORY_OBJ_BUTTON_PATCH = 2,
+    VICTORY_OBJ_BUTTON_EXIT                 = 0,
+    VICTORY_OBJ_BUTTON_AGAIN                = 1,
+    VICTORY_OBJ_BUTTON_PATCH                = 2,
 };
 
-static const char *VictoryBackground = "./styles/img/victory_background.png";
-static const char *VictoryMusicFile = "./styles/music/game_music.mp3";
+/*============================================================================*/
 
-static crack_state_t handle_defeat_button_patch(crack_t *ctx, screen_t *screen, object_t *obj);
-static crack_state_t victory_updater(crack_t *ctx, screen_t *screen);
+static const char *VictoryBackground    = "./styles/img/victory_background.png";
+static const char *VictoryMusicFile     = "./styles/music/game_music.mp3";
+
+/*============================================================================*/
+
+static crack_state_t handle_defeat_button_patch    (crack_t    *ctx,
+                                                    screen_t   *screen,
+                                                    object_t   *obj);
+
+static crack_state_t victory_updater               (crack_t    *ctx,
+                                                    screen_t   *screen);
+
+/*============================================================================*/
 
 static const button_info_t VictoryButtonPatchPrivate = {
     .texture_size           = sf::Vector2i(690, 370),
@@ -29,6 +43,8 @@ static const object_info_t VictoryButtonPatchPublic = {
     .object_private_info    = (const void *)&VictoryButtonPatchPrivate,
 };
 
+/*============================================================================*/
+
 static const button_info_t VictoryButtonExitPrivate = {
     .texture_size           = sf::Vector2i(690, 370),
     .texture_focused        = sf::Vector2i(0, 370),
@@ -46,6 +62,7 @@ static const object_info_t VictoryButtonExitPublic = {
     .object_private_info    = (const void *)&VictoryButtonExitPrivate,
 };
 
+/*============================================================================*/
 
 static const button_info_t VictoryButtonAgainPrivate = {
     .texture_size           = sf::Vector2i(690, 370),
@@ -63,6 +80,8 @@ static const object_info_t VictoryButtonAgainPublic = {
     .size                   = sf::Vector2f(69, 37) * 4.f,
     .object_private_info    = (const void *)&VictoryButtonAgainPrivate,
 };
+
+/*============================================================================*/
 
 crack_state_t victory_ctor(crack_t *ctx, screen_t *screen) {
     screen->objects_num = 3;
@@ -86,14 +105,22 @@ crack_state_t victory_ctor(crack_t *ctx, screen_t *screen) {
     return CRACK_SUCCESS;
 }
 
-crack_state_t handle_defeat_button_patch(crack_t *ctx, screen_t *screen, object_t *obj) {
+/*============================================================================*/
+
+crack_state_t handle_defeat_button_patch(crack_t   *ctx,
+                                         screen_t  *screen,
+                                         object_t  *obj) {
     if(is_button_pressed(ctx, obj)) {
         return CRACK_GO_PATCH;
     }
     return CRACK_SUCCESS;
 }
 
+/*============================================================================*/
+
 crack_state_t victory_updater(crack_t *ctx, screen_t *screen) {
     ctx->win.draw(screen->box);
     return CRACK_SUCCESS;
 }
+
+/*============================================================================*/

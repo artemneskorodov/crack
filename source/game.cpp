@@ -1,42 +1,54 @@
+/*============================================================================*/
+
 #include "game.h"
 #include "utils.h"
 #include "objects.h"
 #include "common.h"
 
+/*============================================================================*/
+
 enum game_objects_t {
-    GAME_OBJ_PLAYER = 0,
-    GAME_OBJ_ENEMIES = 1,
-    GAME_OBJ_BULLETS = 2,
-    GAME_OBJ_COIN = 3,
-    GAME_OBJ_PBAR = 4,
+    GAME_OBJ_PLAYER                         = 0,
+    GAME_OBJ_ENEMIES                        = 1,
+    GAME_OBJ_BULLETS                        = 2,
+    GAME_OBJ_COIN                           = 3,
+    GAME_OBJ_PBAR                           = 4,
 };
+
+/*============================================================================*/
 
 struct player_info_t {
-    sf::Vector2f start_position;//relative
-    float velocity;
+    sf::Vector2f        start_position;
+    float               velocity;
 };
+
+/*============================================================================*/
 
 struct enemies_info_t {
-    float min_velocity;
-    float max_velocity;
-    float spawn_rate; //check players spawn function
-    sf::Vector2i textures[3]; //1hp, 2hp, 3hp
-    sf::Vector2i texture_size;
-    sf::Time cool_down;
-    const char *death_sound;
-    const char *hit_sound;
+    float               min_velocity;
+    float               max_velocity;
+    float               spawn_rate;
+    sf::Vector2i        textures[3];
+    sf::Vector2i        texture_size;
+    sf::Time            cool_down;
+    const char         *death_sound;
+    const char         *hit_sound;
 };
+
+/*============================================================================*/
 
 struct bullets_info_t {
-    float velocity;
-    sf::Time shot_time;
+    float               velocity;
+    sf::Time            shot_time;
 };
 
-static const float DeltaTime = 0.05f;
-static const char *GameMusicFile = "./styles/music/game_music.mp3";
-static const char *GameBackground = "./styles/img/game_background.png";
-static const sf::Time GameBackgroundUpdateTime = sf::milliseconds(500);
-static const sf::IntRect GameBackgroundRects[] = {
+/*============================================================================*/
+
+static const float          DeltaTime           = 0.05f;
+static const char          *GameMusicFile       = "./styles/music/game_music.mp3";
+static const char          *GameBackground      = "./styles/img/game_background.png";
+static const sf::Time       GameBckgUpdateTime  = sf::milliseconds(500);
+static const sf::IntRect    GameBckgRects[]     = {
     sf::IntRect(   0,        0, 3200, 2560),
     sf::IntRect(3200,        0, 3200, 2560),
     sf::IntRect(   0,     2560, 3200, 2560),
@@ -44,16 +56,55 @@ static const sf::IntRect GameBackgroundRects[] = {
     sf::IntRect(   0, 2 * 2560, 3200, 2560),
 };
 
-static crack_state_t player_buttons_handler(crack_t *ctx, object_t *obj);
-static crack_state_t game_updater(crack_t *ctx, screen_t *screen);
-static crack_state_t check_bullets_enemies_collisions(crack_t *ctx, screen_t *screen, bullets_t *bullets, enemies_t *enemies, pbar_t *pbar);
-static crack_state_t check_player_enemies_collisions(crack_t *ctx, screen_t *screen, player_t *player, enemies_t *enemies);
-static crack_state_t check_bullets_timer(crack_t *ctx, screen_t *screen, bullets_t *bullets, player_t *player);
-static crack_state_t set_active(pool_t *pool, int elem, int *active, int *inactive);
-static crack_state_t set_inactive(pool_t *pool, int elem, int *active, int *inactive);
-static crack_state_t reset_pool(pool_t *pool, size_t size, int *active, int *inactive);
-static crack_state_t check_bullet_collisions(crack_t *ctx, screen_t *screen, enemies_t *enemies, const sf::Vector2f &bullet_tl, const sf::Vector2f &bullet_tr, const sf::Vector2f &bullet_bl, pbar_t *pbar);
-static crack_state_t unload_game(crack_t *ctx, screen_t *screen);
+/*============================================================================*/
+
+static crack_state_t player_buttons_handler            (crack_t            *ctx,
+                                                        object_t           *obj);
+
+static crack_state_t game_updater                      (crack_t            *ctx,
+                                                        screen_t           *screen);
+
+static crack_state_t check_bullets_enemies_collisions  (crack_t            *ctx,
+                                                        screen_t           *screen,
+                                                        bullets_t          *bullets,
+                                                        enemies_t          *enemies,
+                                                        pbar_t             *pbar);
+
+static crack_state_t check_player_enemies_collisions   (crack_t            *ctx,
+                                                        screen_t           *screen,
+                                                        player_t           *player,
+                                                        enemies_t          *enemies);
+
+static crack_state_t check_bullets_timer               (crack_t            *ctx,
+                                                        screen_t           *screen,
+                                                        bullets_t          *bullets,
+                                                        player_t           *player);
+
+static crack_state_t set_active                        (pool_t             *pool,
+                                                        int                 elem,
+                                                        int                *active,
+                                                        int                *inactive);
+
+static crack_state_t set_inactive                      (pool_t             *pool,
+                                                        int                 elem,
+                                                        int                *active,
+                                                        int                *inactive);
+
+static crack_state_t reset_pool                        (pool_t             *pool,
+                                                        size_t              size,
+                                                        int                *active,
+                                                        int                *inactive);
+
+static crack_state_t check_bullet_collisions           (crack_t            *ctx,
+                                                        screen_t           *screen,
+                                                        enemies_t          *enemies,
+                                                        const sf::Vector2f &bullet_tl,
+                                                        const sf::Vector2f &bullet_tr,
+                                                        const sf::Vector2f &bullet_bl,
+                                                        pbar_t             *pbar);
+
+static crack_state_t unload_game                       (crack_t            *ctx,
+                                                        screen_t           *screen);
 
 /*============================================================================*/
 
@@ -156,15 +207,6 @@ static const object_info_t GamePBarPublic = {
 };
 
 /*============================================================================*/
-/*
-    .on_mouse_click
-    .on_mouse_move
-    .on_text_entered
-    .handle_buttons
-    .texture
-    .size
-    .object_private_info
-*/
 
 crack_state_t game_ctor(crack_t *ctx, screen_t *screen) {
     screen->objects_num = 5;
@@ -197,11 +239,15 @@ crack_state_t game_ctor(crack_t *ctx, screen_t *screen) {
     return CRACK_SUCCESS;
 }
 
+/*============================================================================*/
+
 crack_state_t game_updater(crack_t *ctx, screen_t *screen) {
-    if(screen->timer.getElapsedTime() > GameBackgroundUpdateTime) {
+    if(screen->timer.getElapsedTime() > GameBckgUpdateTime
+) {
         screen->timer.restart();
-        screen->counter = (screen->counter + 1) % (sizeof(GameBackgroundRects) / sizeof(GameBackgroundRects[0]));
-        screen->box.setTextureRect(GameBackgroundRects[screen->counter]);
+        screen->counter = (screen->counter + 1) % (sizeof(GameBckgRects) /
+                                                   sizeof(GameBckgRects[0]));
+        screen->box.setTextureRect(GameBckgRects[screen->counter]);
     }
 
     object_t *player_obj  = screen->objects + GAME_OBJ_PLAYER;
@@ -213,13 +259,28 @@ crack_state_t game_updater(crack_t *ctx, screen_t *screen) {
     bullets_t *bullets = (bullets_t *)bullets_obj->object_private;
     pbar_t    *pbar    = (pbar_t    *)pbar_obj   ->object_private;
     ctx->win.draw(screen->box);
-    _RETURN_IF_ERROR(check_bullets_enemies_collisions(ctx, screen, bullets, enemies, pbar));
-    _RETURN_IF_ERROR(check_player_enemies_collisions (ctx, screen, player, enemies));
-    _RETURN_IF_ERROR(check_bullets_timer             (ctx, screen, bullets, player));
+    _RETURN_IF_ERROR(check_bullets_enemies_collisions(ctx,
+                                                      screen,
+                                                      bullets,
+                                                      enemies,
+                                                      pbar));
+    _RETURN_IF_ERROR(check_player_enemies_collisions (ctx,
+                                                      screen,
+                                                      player,
+                                                      enemies));
+    _RETURN_IF_ERROR(check_bullets_timer             (ctx,
+                                                      screen,
+                                                      bullets,
+                                                      player));
     return CRACK_SUCCESS;
 }
 
-crack_state_t check_bullets_timer(crack_t *ctx, screen_t *screen, bullets_t *bullets, player_t *player) {
+/*============================================================================*/
+
+crack_state_t check_bullets_timer(crack_t      *ctx,
+                                  screen_t     *screen,
+                                  bullets_t    *bullets,
+                                  player_t     *player) {
     if(bullets->last_shot.getElapsedTime() < bullets->shot_time) {
         return CRACK_SUCCESS;
     }
@@ -241,7 +302,13 @@ crack_state_t check_bullets_timer(crack_t *ctx, screen_t *screen, bullets_t *bul
     return CRACK_SUCCESS;
 }
 
-crack_state_t check_bullets_enemies_collisions(crack_t *ctx, screen_t *screen, bullets_t *bullets, enemies_t *enemies, pbar_t *pbar) {
+/*============================================================================*/
+
+crack_state_t check_bullets_enemies_collisions(crack_t     *ctx,
+                                               screen_t    *screen,
+                                               bullets_t   *bullets,
+                                               enemies_t   *enemies,
+                                               pbar_t      *pbar) {
     int bullet = bullets->active_head;
     while(bullet != -1) {
         int bullet_next = bullets->pool[bullet].next;
@@ -252,13 +319,27 @@ crack_state_t check_bullets_enemies_collisions(crack_t *ctx, screen_t *screen, b
         sf::Vector2f tr = tl + sf::Vector2f(bullet_box.getSize().x, 0);
         sf::Vector2f bl = tl + sf::Vector2f(0, bullet_box.getSize().y);
 
-        _RETURN_IF_ERROR(check_bullet_collisions(ctx, screen, enemies, tl, tr, bl, pbar));
+        _RETURN_IF_ERROR(check_bullet_collisions(ctx,
+                                                 screen,
+                                                 enemies,
+                                                 tl,
+                                                 tr,
+                                                 bl,
+                                                 pbar));
         bullet = bullet_next;
     }
     return CRACK_SUCCESS;
 }
 
-crack_state_t check_bullet_collisions(crack_t *ctx, screen_t *screen, enemies_t *enemies, const sf::Vector2f &bullet_tl, const sf::Vector2f &bullet_tr, const sf::Vector2f &bullet_bl, pbar_t *pbar) {
+/*============================================================================*/
+
+crack_state_t check_bullet_collisions(crack_t              *ctx,
+                                      screen_t             *screen,
+                                      enemies_t            *enemies,
+                                      const sf::Vector2f   &bullet_tl,
+                                      const sf::Vector2f   &bullet_tr,
+                                      const sf::Vector2f   &bullet_bl,
+                                      pbar_t               *pbar) {
     int enemy = enemies->active_head;
     while(enemy != -1) {
         int next = enemies->pool[enemy].next;
@@ -292,7 +373,12 @@ crack_state_t check_bullet_collisions(crack_t *ctx, screen_t *screen, enemies_t 
     return CRACK_SUCCESS;
 }
 
-crack_state_t check_player_enemies_collisions(crack_t */*ctx*/, screen_t */*screen*/, player_t *player, enemies_t *enemies) {
+/*============================================================================*/
+
+crack_state_t check_player_enemies_collisions(crack_t      */*ctx*/,
+                                              screen_t     */*screen*/,
+                                              player_t     *player,
+                                              enemies_t    *enemies) {
     const sf::Vector2f &tl = player->box.getPosition();
 
     sf::Vector2f tr = tl + sf::Vector2f(player->box.getSize().x, 0);
@@ -310,13 +396,21 @@ crack_state_t check_player_enemies_collisions(crack_t */*ctx*/, screen_t */*scre
     return CRACK_SUCCESS;
 }
 
-crack_state_t player_constructor(crack_t *ctx, object_t *obj, const object_info_t *obj_info) {
-    obj->object_private = ctx->get_free_obj(ctx->objects_storage, OBJECT_PLAYER);
+/*============================================================================*/
+
+crack_state_t player_constructor(crack_t               *ctx,
+                                 object_t              *obj,
+                                 const object_info_t   *obj_info) {
+    obj->object_private = ctx->get_free_obj(ctx->objects_storage,
+                                            OBJECT_PLAYER);
     player_t *player = (player_t *)obj->object_private;
-    const player_info_t *info = (const player_info_t *)obj_info->object_private_info;
+    const player_info_t *info = (const player_info_t *)
+                                obj_info->object_private_info;
 
     player->box.setSize(obj_info->size);
-    player->box.setPosition(real_pos(info->start_position, ScreenSize, obj_info->size));
+    player->box.setPosition(real_pos(info->start_position,
+                                     ScreenSize,
+                                     obj_info->size));
     player->box.setTexture(&obj->texture);
     player->velocity = sf::Vector2f(0, 0);
     player->speed = info->velocity;
@@ -324,6 +418,8 @@ crack_state_t player_constructor(crack_t *ctx, object_t *obj, const object_info_
 
     return CRACK_SUCCESS;
 }
+
+/*============================================================================*/
 
 crack_state_t player_updater(crack_t *ctx, object_t *obj) {
     player_t *player = (player_t *)obj->object_private;
@@ -346,10 +442,16 @@ crack_state_t player_updater(crack_t *ctx, object_t *obj) {
     return CRACK_SUCCESS;
 }
 
-crack_state_t enemies_constructor(crack_t *ctx, object_t *obj, const object_info_t *obj_info) {
-    obj->object_private = ctx->get_free_obj(ctx->objects_storage, OBJECT_ENEMIES);
+/*============================================================================*/
+
+crack_state_t enemies_constructor(crack_t             *ctx,
+                                  object_t            *obj,
+                                  const object_info_t *obj_info) {
+    obj->object_private = ctx->get_free_obj(ctx->objects_storage,
+                                            OBJECT_ENEMIES);
     enemies_t *enemies = (enemies_t *)obj->object_private;
-    const enemies_info_t *info = (const enemies_info_t *)obj_info->object_private_info;
+    const enemies_info_t *info = (const enemies_info_t *)
+                                 obj_info->object_private_info;
 
     for(size_t i = 0; i < 3; i++) {
         sf::IntRect &rect = enemies->textures[i];
@@ -379,6 +481,8 @@ crack_state_t enemies_constructor(crack_t *ctx, object_t *obj, const object_info
     enemies->hit_sound  .setBuffer(enemies->hit_sound_buffer  );
     return CRACK_SUCCESS;
 }
+
+/*============================================================================*/
 
 crack_state_t enemies_updater(crack_t *ctx, object_t *obj) {
     enemies_t *enemies = (enemies_t *)obj->object_private;
@@ -411,12 +515,14 @@ crack_state_t enemies_updater(crack_t *ctx, object_t *obj) {
                                         new_elem,
                                         &enemies->active_head,
                                         &enemies->inactive_head));
-            sf::Vector2f pos = sf::Vector2f((float)((unsigned int)rand() % WindowMode.width), 0);
+            sf::Vector2f pos = sf::Vector2f(0, 0);
+            pos.x = (float)((unsigned int)rand() % WindowMode.width);
             sf::RectangleShape &box = enemies->boxes[new_elem];
             box.setPosition(pos - box.getSize());
-            enemies->velocities[new_elem] = enemies->min_velocity +
-                                            (rand() % 100) * 0.01f * (enemies->max_velocity -
-                                                                      enemies->min_velocity);
+            float velocity = enemies->min_velocity;
+            float max_velocity = enemies->max_velocity;
+            vel += (rand() % 100) * 0.01f * (max_velocity - velocity);
+            enemies->velocities[new_elem] = vel;
             enemies->hps[new_elem] = 3;
             box.setTextureRect(enemies->textures[3 - 1]);
             ctx->win.draw(box);
@@ -425,10 +531,16 @@ crack_state_t enemies_updater(crack_t *ctx, object_t *obj) {
     return CRACK_SUCCESS;
 }
 
-crack_state_t bullets_constructor(crack_t *ctx, object_t *obj, const object_info_t *obj_info) {
-    obj->object_private = ctx->get_free_obj(ctx->objects_storage, OBJECT_BULLETS);
+/*============================================================================*/
+
+crack_state_t bullets_constructor(crack_t              *ctx,
+                                  object_t             *obj,
+                                  const object_info_t  *obj_info) {
+    obj->object_private = ctx->get_free_obj(ctx->objects_storage,
+                                            OBJECT_BULLETS);
     bullets_t *bullets = (bullets_t *)obj->object_private;
-    const bullets_info_t *info = (const bullets_info_t *)obj_info->object_private_info;
+    const bullets_info_t *info = (const bullets_info_t *)
+                                 obj_info->object_private_info;
 
     for(size_t i = 0; i < BulletsNum; i++) {
         sf::RectangleShape &box = bullets->boxes[i];
@@ -444,6 +556,8 @@ crack_state_t bullets_constructor(crack_t *ctx, object_t *obj, const object_info
     bullets->shot_time     = info->shot_time;
     return CRACK_SUCCESS;
 }
+
+/*============================================================================*/
 
 crack_state_t bullets_updater(crack_t *ctx, object_t *obj) {
     bullets_t *bullets = (bullets_t *)obj->object_private;
@@ -469,6 +583,8 @@ crack_state_t bullets_updater(crack_t *ctx, object_t *obj) {
     return CRACK_SUCCESS;
 }
 
+/*============================================================================*/
+
 crack_state_t set_inactive(pool_t *pool, int elem, int *active, int *inactive) {
     if(pool[elem].prev != -1) {
         pool[pool[elem].prev].next = pool[elem].next;
@@ -488,6 +604,8 @@ crack_state_t set_inactive(pool_t *pool, int elem, int *active, int *inactive) {
     *inactive = elem;
     return CRACK_SUCCESS;
 }
+
+/*============================================================================*/
 
 crack_state_t set_active(pool_t *pool, int elem, int *active, int *inactive) {
     if(pool[elem].prev != -1) {
@@ -509,6 +627,8 @@ crack_state_t set_active(pool_t *pool, int elem, int *active, int *inactive) {
     return CRACK_SUCCESS;
 }
 
+/*============================================================================*/
+
 crack_state_t player_buttons_handler(crack_t */*ctx*/, object_t *obj) {
     player_t *player = (player_t *)obj->object_private;
     bool left  = sf::Keyboard::isKeyPressed(sf::Keyboard::Left );
@@ -520,13 +640,17 @@ crack_state_t player_buttons_handler(crack_t */*ctx*/, object_t *obj) {
     int mult_y = (int)down  - (int)up;
 
     if((left != right) && (down != up)) {
-        player->velocity = sf::Vector2f(player->speed * mult_x, player->speed * mult_y) / sqrtf(2);
+        player->velocity = sf::Vector2f(player->speed * mult_x,
+                                        player->speed * mult_y) / sqrtf(2);
     }
     else {
-        player->velocity = sf::Vector2f(player->speed * mult_x, player->speed * mult_y);
+        player->velocity = sf::Vector2f(player->speed * mult_x,
+                                        player->speed * mult_y);
     }
     return CRACK_SUCCESS;
 }
+
+/*============================================================================*/
 
 crack_state_t unload_game(crack_t *ctx, screen_t *screen) {
     object_t *player_obj  = screen->objects + GAME_OBJ_PLAYER;
@@ -552,7 +676,12 @@ crack_state_t unload_game(crack_t *ctx, screen_t *screen) {
     return CRACK_SUCCESS;
 }
 
-crack_state_t reset_pool(pool_t *pool, size_t size, int *active, int *inactive) {
+/*============================================================================*/
+
+crack_state_t reset_pool(pool_t *pool,
+                         size_t size,
+                         int *active,
+                         int *inactive) {
     for(size_t i = 0; i < size; i++) {
         if(i + 1 != size) {
             pool[i].next = (int)i + 1;
@@ -566,3 +695,5 @@ crack_state_t reset_pool(pool_t *pool, size_t size, int *active, int *inactive) 
     *inactive =  0;
     return CRACK_SUCCESS;
 }
+
+/*============================================================================*/

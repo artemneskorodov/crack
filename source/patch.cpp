@@ -1,15 +1,27 @@
+/*============================================================================*/
+
 #include "patch.h"
 #include "utils.h"
 
-static const char      *SupportedPrototype  = "./data/supported.com";
-static const size_t     PasswordOffset      = 0x244;
-static const char      *PatchSuccessBackground = "./styles/img/patch_success_background.png";
-static const char      *PatchSuccessMusicFile  = "./styles/music/menu_music.mp3";
-static const char      *PatchFailedBackground  = "./styles/img/patch_failed_background.png";
+/*============================================================================*/
 
-static crack_state_t check_file_supported(char *buffer, size_t size);
-static crack_state_t change_file(FILE *file);
-static crack_state_t patch_updater(crack_t *ctx, screen_t *screen);
+static const char      *SupportedPrototype      = "./data/supported.com";
+static const size_t     PasswordOffset          = 0x244;
+static const char      *PatchSuccessBckg        = "./styles/img/patch_success_background.png";
+static const char      *PatchSuccessMusicFile   = "./styles/music/menu_music.mp3";
+static const char      *PatchFailedBckg         = "./styles/img/patch_failed_background.png";
+
+/*============================================================================*/
+
+static crack_state_t check_file_supported  (char       *buffer,
+                                            size_t      size);
+
+static crack_state_t change_file           (FILE       *file);
+
+static crack_state_t patch_updater         (crack_t    *ctx,
+                                            screen_t   *screen);
+
+/*============================================================================*/
 
 static const button_info_t PatchSuccessExitPrivate = {
     .texture_size           = sf::Vector2i(690, 370),
@@ -28,6 +40,8 @@ static const object_info_t PatchSuccessExitPublic = {
     .object_private_info    = (const void *)&PatchSuccessExitPrivate,
 };
 
+/*============================================================================*/
+
 static const button_info_t PatchFailedExitPrivate = {
     .texture_size           = sf::Vector2i(690, 370),
     .texture_focused        = sf::Vector2i(0, 370),
@@ -45,6 +59,7 @@ static const object_info_t PatchFailedExitPublic = {
     .object_private_info    = (const void *)&PatchFailedExitPrivate,
 };
 
+/*============================================================================*/
 
 crack_state_t patch(const char *filename) {
     FILE *file = fopen(filename, "r+b");
@@ -82,6 +97,8 @@ crack_state_t patch(const char *filename) {
     return CRACK_SUCCESS;
 }
 
+/*============================================================================*/
+
 crack_state_t check_file_supported(char *buffer, size_t size) {
     FILE *supported = fopen(SupportedPrototype, "rb");
     if(supported == NULL) {
@@ -107,19 +124,26 @@ crack_state_t check_file_supported(char *buffer, size_t size) {
     return CRACK_SUCCESS;
 }
 
+/*============================================================================*/
+
 crack_state_t change_file(FILE *file) {
     fseek(file, PasswordOffset, SEEK_SET);
-    if(fwrite(NewPassword, sizeof(char), NewPasswordLen, file) != NewPasswordLen) {
+    if(fwrite(NewPassword,
+              sizeof(char),
+              NewPasswordLen,
+              file) != NewPasswordLen) {
         return CRACK_WRITING_FILE_ERROR;
     }
     return CRACK_SUCCESS;
 }
 
-crack_state_t patch_not_supported_ctor(crack_t *ctx, screen_t *screen) {
+/*============================================================================*/
+
+crack_state_t patch_failed_ctor(crack_t *ctx, screen_t *screen) {
     screen->objects_num = 1;
     _RETURN_IF_ERROR(screen_ctor   (screen,
                                     PatchSuccessMusicFile,
-                                    PatchFailedBackground,
+                                    PatchFailedBckg,
                                     patch_updater,
                                     NULL));
     _RETURN_IF_ERROR(object_ctor   (ctx,
@@ -129,11 +153,13 @@ crack_state_t patch_not_supported_ctor(crack_t *ctx, screen_t *screen) {
     return CRACK_SUCCESS;
 }
 
+/*============================================================================*/
+
 crack_state_t patch_success_ctor(crack_t *ctx, screen_t *screen) {
     screen->objects_num = 1;
     _RETURN_IF_ERROR(screen_ctor   (screen,
                                     PatchSuccessMusicFile,
-                                    PatchSuccessBackground,
+                                    PatchSuccessBckg,
                                     patch_updater,
                                     NULL));
     _RETURN_IF_ERROR(object_ctor   (ctx,
@@ -143,7 +169,11 @@ crack_state_t patch_success_ctor(crack_t *ctx, screen_t *screen) {
     return CRACK_SUCCESS;
 }
 
+/*============================================================================*/
+
 crack_state_t patch_updater(crack_t *ctx, screen_t *screen) {
     ctx->win.draw(screen->box);
     return CRACK_SUCCESS;
 }
+
+/*============================================================================*/

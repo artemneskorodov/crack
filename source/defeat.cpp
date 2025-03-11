@@ -1,14 +1,24 @@
+/*============================================================================*/
+
 #include "defeat.h"
 
+/*============================================================================*/
+
 enum defeat_object_t {
-    DEFEAT_OBJ_BUTTON_AGAIN = 0,
-    DEFEAT_OBJ_BUTTON_EXIT = 1,
+    DEFEAT_OBJ_BUTTON_AGAIN                 = 0,
+    DEFEAT_OBJ_BUTTON_EXIT                  = 1,
 };
 
-static const char *DefeatMusicFile = "./styles/music/menu_music.mp3";//"./styles/music/defeat_music.mp3";
-static const char *DefeatBackground = "./styles/img/defeat_background.png";
+/*============================================================================*/
 
-crack_state_t defeat_updater(crack_t *ctx, screen_t *screen);
+static const char          *DefeatMusicFile     = "./styles/music/menu_music.mp3";
+static const char          *DefeatBackground    = "./styles/img/defeat_background.png";
+
+/*============================================================================*/
+
+static crack_state_t defeat_updater(crack_t *ctx, screen_t *screen);
+
+/*============================================================================*/
 
 static const button_info_t DefeatButtonAgainPrivate = {
     .texture_size           = sf::Vector2i(690, 370),
@@ -27,6 +37,8 @@ static const object_info_t DefeatButtonAgainPublic = {
     .object_private_info    = (const void *)&DefeatButtonAgainPrivate,
 };
 
+/*============================================================================*/
+
 static const button_info_t DefeatButtonExitPrivate = {
     .texture_size           = sf::Vector2i(690, 370),
     .texture_focused        = sf::Vector2i(0, 370),
@@ -43,6 +55,8 @@ static const object_info_t DefeatButtonExitPublic = {
     .size                   = sf::Vector2f(69, 37) * 4.f,
     .object_private_info    = (const void *)&DefeatButtonExitPrivate,
 };
+
+/*============================================================================*/
 
 crack_state_t defeat_ctor(crack_t *ctx, screen_t *screen) {
     screen->objects_num = 2;
@@ -62,7 +76,11 @@ crack_state_t defeat_ctor(crack_t *ctx, screen_t *screen) {
     return CRACK_SUCCESS;
 }
 
+/*============================================================================*/
+
 crack_state_t defeat_updater(crack_t *ctx, screen_t *screen) {
     ctx->win.draw(screen->box);
     return CRACK_SUCCESS;
 }
+
+/*============================================================================*/

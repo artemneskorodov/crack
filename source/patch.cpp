@@ -32,7 +32,7 @@ static const button_info_t PatchSuccessExitPrivate = {
 
 static const object_info_t PatchSuccessExitPublic = {
     .on_mouse_click         = handle_button_exit,
-    .on_mouse_move          = default_button_move,
+    .on_mouse_move          = button_move,
     .on_text_entered        = NULL,
     .handle_buttons         = NULL,
     .texture                = "./styles/img/menu_button_exit.png",
@@ -51,7 +51,7 @@ static const button_info_t PatchFailedExitPrivate = {
 
 static const object_info_t PatchFailedExitPublic = {
     .on_mouse_click         = handle_button_exit,
-    .on_mouse_move          = default_button_move,
+    .on_mouse_move          = button_move,
     .on_text_entered        = NULL,
     .handle_buttons         = NULL,
     .texture                = "./styles/img/menu_button_exit.png",

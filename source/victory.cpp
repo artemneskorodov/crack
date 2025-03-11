@@ -35,7 +35,7 @@ static const button_info_t VictoryButtonPatchPrivate = {
 
 static const object_info_t VictoryButtonPatchPublic = {
     .on_mouse_click         = handle_defeat_button_patch,
-    .on_mouse_move          = default_button_move,
+    .on_mouse_move          = button_move,
     .on_text_entered        = NULL,
     .handle_buttons         = NULL,
     .texture                = "./styles/img/victory_button_patch.png",
@@ -54,7 +54,7 @@ static const button_info_t VictoryButtonExitPrivate = {
 
 static const object_info_t VictoryButtonExitPublic = {
     .on_mouse_click         = handle_button_exit,
-    .on_mouse_move          = default_button_move,
+    .on_mouse_move          = button_move,
     .on_text_entered        = NULL,
     .handle_buttons         = NULL,
     .texture                = "./styles/img/menu_button_exit.png",
@@ -73,7 +73,7 @@ static const button_info_t VictoryButtonAgainPrivate = {
 
 static const object_info_t VictoryButtonAgainPublic = {
     .on_mouse_click         = handle_button_again,
-    .on_mouse_move          = default_button_move,
+    .on_mouse_move          = button_move,
     .on_text_entered        = NULL,
     .handle_buttons         = NULL,
     .texture                = "./styles/img/defeat_button_again.png",

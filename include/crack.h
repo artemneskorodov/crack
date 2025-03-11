@@ -53,11 +53,11 @@ enum object_types_t {
     OBJECT_PLAYER                           = 3,
     OBJECT_ENEMIES                          = 4,
     OBJECT_BULLETS                          = 5,
-    OBJECT_DECORATION                       = 6,
+    OBJECT_DECOR                            = 6,
     OBJECT_PBAR                             = 7,
 
     /*
-    constant OBJECT_MAX is used as max number of different types
+    Constant OBJECT_MAX is used as max number of different types
     add constants in this enum only lower than it, or change it
     */
     OBJECT_MAX                              = 10,
@@ -65,11 +65,20 @@ enum object_types_t {
 
 /*============================================================================*/
 
+typedef crack_state_t (*on_mouse_click_t  )(crack_t *, screen_t *, object_t *);
+typedef crack_state_t (*on_mouse_move_t   )(crack_t *, object_t *);
+typedef crack_state_t (*on_text_enetered_t)(crack_t *, object_t *, sf::Event &);
+typedef crack_state_t (*handle_buttons_t  )(crack_t *, object_t *);
+typedef crack_state_t (*updater_t         )(crack_t *, screen_t *);
+typedef crack_state_t (*unloader_t        )(crack_t *, screen_t *);
+
+/*============================================================================*/
+
 struct object_info_t {
-    crack_state_t     (*on_mouse_click )(crack_t *, screen_t *, object_t *);
-    crack_state_t     (*on_mouse_move  )(crack_t *, object_t *);
-    crack_state_t     (*on_text_entered)(crack_t *, object_t *, sf::Event &);
-    crack_state_t     (*handle_buttons )(crack_t *, object_t *);
+    on_mouse_click_t    on_mouse_click;
+    on_mouse_move_t     on_mouse_move;
+    on_text_enetered_t  on_text_entered;
+    handle_buttons_t    handle_buttons;
     const char         *texture;
     sf::Vector2f        size;
     const void         *object_private_info;
@@ -80,10 +89,10 @@ struct object_info_t {
 struct object_t {
     object_types_t      type;
     sf::Texture         texture;
-    crack_state_t     (*on_mouse_click )(crack_t *, screen_t *, object_t *);
-    crack_state_t     (*on_mouse_move  )(crack_t *, object_t *);
-    crack_state_t     (*on_text_entered)(crack_t *, object_t *, sf::Event &);
-    crack_state_t     (*handle_buttons )(crack_t *, object_t *);
+    on_mouse_click_t    on_mouse_click;
+    on_mouse_move_t     on_mouse_move;
+    on_text_enetered_t  on_text_entered;
+    handle_buttons_t    handle_buttons;
     bool                waits_for_text;
     void               *object_private;
 };
@@ -94,8 +103,8 @@ struct screen_t {
     object_t            objects[MaxObjectsNumber];
     size_t              objects_num;
     sf::Music           music;
-    crack_state_t     (*updater )(crack_t *, screen_t *);
-    crack_state_t     (*unloader)(crack_t *, screen_t *);
+    updater_t           updater;
+    unloader_t          unloader;
     sf::RectangleShape  box;
 
     sf::Texture         background;
@@ -129,19 +138,19 @@ struct crack_t {
 
 /*============================================================================*/
 
-crack_state_t   object_ctor        (crack_t                *ctx,
-                                    object_t               *obj,
-                                    const object_info_t    *obj_info,
-                                    object_types_t          type);
+crack_state_t       object_ctor        (crack_t                *ctx,
+                                        object_t               *obj,
+                                        const object_info_t    *obj_info,
+                                        object_types_t          type);
 
-crack_state_t   run_screen         (crack_t                *ctx,
-                                    screen_t               *screen);
+crack_state_t       run_screen         (crack_t                *ctx,
+                                        screen_t               *screen);
 
-crack_state_t   screen_ctor        (screen_t               *screen,
-                                    const char             *music,
-                                    const char             *texture,
-                                    crack_state_t         (*updater )(crack_t *, screen_t *),
-                                    crack_state_t         (*unloader)(crack_t *, screen_t *));
+crack_state_t       screen_ctor        (screen_t               *screen,
+                                        const char             *music,
+                                        const char             *texture,
+                                        updater_t               updater,
+                                        unloader_t              unloader);
 
 /*============================================================================*/
 

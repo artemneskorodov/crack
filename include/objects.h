@@ -138,7 +138,7 @@ struct objects_storage_t {
 
 /*============================================================================*/
 
-void           *get_free_object        (void               *storage,
+void               *get_free_object    (void               *storage,
                                         object_types_t      object_type);
 
 /*============================================================================*/

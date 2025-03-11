@@ -43,7 +43,7 @@ static const button_info_t MenuButtonStartPrivate = {
 
 static const object_info_t MenuButtonStartPublic = {
     .on_mouse_click         = handle_menu_button_start,
-    .on_mouse_move          = default_button_move,
+    .on_mouse_move          = button_move,
     .on_text_entered        = NULL,
     .handle_buttons         = NULL,
     .texture                = "./styles/img/menu_button_start.png",
@@ -62,7 +62,7 @@ static const button_info_t MenuButtonExitPrivate = {
 
 static const object_info_t MenuButtonExitPublic = {
     .on_mouse_click         = handle_button_exit,
-    .on_mouse_move          = default_button_move,
+    .on_mouse_move          = button_move,
     .on_text_entered        = NULL,
     .handle_buttons         = NULL,
     .texture                = "./styles/img/menu_button_exit.png",
@@ -84,9 +84,9 @@ static const textbox_info_t MenuInputTextPrivate = {
 };
 
 static const object_info_t MenuInputTextPublic = {
-    .on_mouse_click         = default_textbox_click,
-    .on_mouse_move          = default_textbox_move,
-    .on_text_entered        = default_textbox_text,
+    .on_mouse_click         = textbox_click,
+    .on_mouse_move          = textbox_move,
+    .on_text_entered        = textbox_text,
     .handle_buttons         = NULL,
     .texture                = "./styles/img/menu_input_box.png",
     .size                   = sf::Vector2f(300, 37) * 4.f,
@@ -122,13 +122,22 @@ crack_state_t menu_ctor(crack_t *ctx, screen_t *screen) {
 crack_state_t handle_menu_button_start(crack_t *ctx,
                                        screen_t *screen,
                                        object_t *obj) {
+    /*------------------------------------------------------------------------*/
+    /* Checking if button is pressed                                          */
     if(!is_button_pressed(ctx, obj)) {
         return CRACK_SUCCESS;
     }
+    /*------------------------------------------------------------------------*/
+    /* Stoppign menu music                                                    */
     screen->music.stop();
+    /*------------------------------------------------------------------------*/
+    /* Running other screens                                                  */
     while(true) {
+        /*--------------------------------------------------------------------*/
+        /* Running game                                                       */
         crack_state_t game_result =
             run_screen(ctx, ctx->screens + SCREEN_GAME);
+        /*--------------------------------------------------------------------*/
         if(game_result == CRACK_GAME_WON) {
             crack_state_t victory_result =
                 run_screen(ctx, ctx->screens + SCREEN_VICTORY);

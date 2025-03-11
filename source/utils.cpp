@@ -26,9 +26,9 @@ bool is_object_focused(const sf::Vector2f &mouse,
 
 /*============================================================================*/
 
-bool box_intersect(const sf::Vector2f &tl1,
-                   const sf::Vector2f &tr1,
-                   const sf::Vector2f &bl1,
+bool box_intersect(const sf::Vector2f       &tl1,
+                   const sf::Vector2f       &tr1,
+                   const sf::Vector2f       &bl1,
                    const sf::RectangleShape &box2) {
     const sf::Vector2f &tl2 = box2.getPosition();
     sf::Vector2f tr2 = tl2 + sf::Vector2f(box2.getSize().x, 0);

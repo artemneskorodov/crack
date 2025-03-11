@@ -11,8 +11,8 @@ enum defeat_object_t {
 
 /*============================================================================*/
 
-static const char          *DefeatMusicFile     = "./styles/music/menu_music.mp3";
-static const char          *DefeatBackground    = "./styles/img/defeat_background.png";
+static const char          *DefeatMusic     = "./styles/music/menu_music.mp3";
+static const char          *DefeatBckg      = "./styles/img/defeat_background.png";
 
 /*============================================================================*/
 
@@ -29,7 +29,7 @@ static const button_info_t DefeatButtonAgainPrivate = {
 
 static const object_info_t DefeatButtonAgainPublic = {
     .on_mouse_click         = handle_button_again,
-    .on_mouse_move          = default_button_move,
+    .on_mouse_move          = button_move,
     .on_text_entered        = NULL,
     .handle_buttons         = NULL,
     .texture                = "./styles/img/defeat_button_again.png",
@@ -48,7 +48,7 @@ static const button_info_t DefeatButtonExitPrivate = {
 
 static const object_info_t DefeatButtonExitPublic = {
     .on_mouse_click         = handle_button_exit,
-    .on_mouse_move          = default_button_move,
+    .on_mouse_move          = button_move,
     .on_text_entered        = NULL,
     .handle_buttons         = NULL,
     .texture                = "./styles/img/menu_button_exit.png",
@@ -61,8 +61,8 @@ static const object_info_t DefeatButtonExitPublic = {
 crack_state_t defeat_ctor(crack_t *ctx, screen_t *screen) {
     screen->objects_num = 2;
     _RETURN_IF_ERROR(screen_ctor   (screen,
-                                    DefeatMusicFile,
-                                    DefeatBackground,
+                                    DefeatMusic,
+                                    DefeatBckg,
                                     defeat_updater,
                                     NULL));
     _RETURN_IF_ERROR(object_ctor   (ctx,

@@ -43,7 +43,7 @@ void *get_free_object(void *storage_ptr, object_types_t type){
             }
             return &storage->bullets_objs[storage->used_bullets++];
         }
-        case OBJECT_DECORATION: {
+        case OBJECT_DECOR: {
             if(storage->used_decorations == DecorationObjectsNum) {
                 fprintf(stderr, "All decorations are used\n");
                 return NULL;

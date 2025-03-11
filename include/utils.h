@@ -23,7 +23,7 @@ bool            is_object_focused      (const sf::Vector2f         &mouse,
 
 bool            box_intersect          (const sf::Vector2f         &tl1,
                                         const sf::Vector2f         &tr1,
-                                        const sf::Vector2f          bl1,
+                                        const sf::Vector2f         &bl1,
                                         const sf::RectangleShape   &box2);
 
 size_t          file_size              (FILE                       *file);

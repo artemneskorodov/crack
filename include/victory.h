@@ -11,8 +11,8 @@
 
 /*============================================================================*/
 
-crack_state_t   victory_ctor           (crack_t            *ctx,
-                                        screen_t           *screen);
+crack_state_t   victory_ctor           (crack_t                *ctx,
+                                        screen_t               *screen);
 
 /*============================================================================*/
 
